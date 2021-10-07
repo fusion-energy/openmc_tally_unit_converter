@@ -47,7 +47,7 @@ class StatePoint(openmc.StatePoint):
             # dose coefficients have pico sievert cm **2
             # flux has cm2 / simulated_particle units
             # dose on a surface uses a current score (units of per simulated_particle) and is therefore * area to get pSv / source particle
-            # dose on a volume uses a flux score (units of cm2 per simulated particle) and therefore gives Sv cm**2 / simulated particle
+            # dose on a volume uses a flux score (units of cm2 per simulated particle) and therefore gives pSv cm**4 / simulated particle
             return [ureg.picosievert * ureg.centimeter **2 / ureg.simulated_particle]
 
         if 'flux' in tally.name:
