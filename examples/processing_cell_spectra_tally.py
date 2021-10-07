@@ -32,3 +32,29 @@ result = statepoint.process_tally(
     fusion_power=1e9
 )
 print(f'spectra per pulse = {result}', end='\n\n')
+
+
+
+# import json
+
+# with open('results.json') as f:
+#   data = json.load(f)
+
+# x=data['652_neutron_spectra']['flux per second']['energy'][:-1]
+# y=data['652_neutron_spectra']['flux per second']['result']
+# y_err=data['652_neutron_spectra']['flux per second']['std. dev.']
+
+opp.plot_step_line_graph(
+    x_label='Energy [MeV]',
+    y_label='neutron flux [particles/cm2-s]',
+    x_scale='log',
+    y_scale='log',
+    x=result[0],
+    y=result[1],
+    # y_err=y_err,
+    trim_zeros=False,
+    filename='step_line_graph.png'
+)
+
+# with open('results.json') as f:
+#   data = json.load(f)

@@ -38,14 +38,19 @@ def plot_step_line_graph(
         the matplotlib.pyplot object produced
     """
 
+    # x=x[:-1]
+    y=y[:-1]
+
     if trim_zeros is True:
         y = np.trim_zeros(np.array(y))
         x = np.array(x[:len(y)])
-        y_err = np.array(y_err[:len(y)])
+        if y_err is not None:
+            y_err = np.array(y_err[:len(y)])
     else:
         y = np.array(y)
         x = np.array(x)
-        y_err = np.array(y_err)
+        if y_err is not None:
+            y_err = np.array(y_err)
 
     plt.xlabel(x_label)
     plt.ylabel(y_label)
@@ -66,27 +71,3 @@ def plot_step_line_graph(
         plt.savefig(filename, bbox_inches='tight')
 
     return plt
-
-
-import json
-
-with open('results.json') as f:
-  data = json.load(f)
-
-x=data['652_neutron_spectra']['flux per second']['energy'][:-1]
-y=data['652_neutron_spectra']['flux per second']['result']
-y_err=data['652_neutron_spectra']['flux per second']['std. dev.']
-
-plot_step_line_graph(
-    x_label='Energy [MeV]',
-    y_label='neutron flux [particles/cm2-s]',
-    # x_scale='log',
-    # y_scale='log',
-    x=x,
-    y=y,
-    y_err=y_err,
-    filename='step_line_graph.png'
-)
-
-# with open('results.json') as f:
-#   data = json.load(f)

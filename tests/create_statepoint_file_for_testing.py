@@ -10,10 +10,10 @@ from stl_to_h5m import stl_to_h5m
 
 my_shape = paramak.ExtrudeStraightShape(
     points=[
-        (400, 100),
-        (400, 200),
+        (1, 1),
+        (1, 200),
         (600, 200),
-        (600, 100)
+        (600, 1)
         ],
     distance=180,
 )
@@ -102,7 +102,7 @@ tallies = openmc.Tallies([tally1, tally2, tally3, tally4, tally5, tally6, tally7
 
 settings = odw.FusionSettings()
 settings.batches = 2
-settings.particles = 100
+settings.particles = 1000
 # assigns a ring source of DT energy neutrons to the source using the
 # openmc_plasma_source package
 settings.source = ops.FusionPointSource()

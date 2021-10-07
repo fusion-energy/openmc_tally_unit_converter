@@ -4,7 +4,6 @@ from pathlib import Path
 import numpy as np
 import openmc
 import pint
-from multipledispatch import dispatch
 
 from openmc_post_processor import find_fusion_energy_per_reaction
 
@@ -101,8 +100,7 @@ class StatePoint(openmc.StatePoint):
             tally_result.append(np.array(data_frame["mean"]) * base_units[0])
             for filter in tally.filters:
                 if isinstance(filter, openmc.filter.EnergyFilter):
-                    energy_base_units = ureg.electron_volt
-                    tally_result.append(filter.values * energy_base_units)
+                    tally_result.append(filter.values * base_units[1])
                     # skip other filters and contine ?
 
             if required_units:
@@ -112,29 +110,29 @@ class StatePoint(openmc.StatePoint):
 
     def convert_unit(self, value_to_convert, required_units):
 
-            if any(x in required_units for x in ['per second', '/ second', '/second']):
-                value_to_convert = value_to_convert * self.number_of_neutrons_per_second
-                value_to_convert = value_to_convert.to(required_units)
-
-            if any(x in required_units for x in ['per pulse', '/ pulse', '/pulse']):
-                value_to_convert = value_to_convert * self.number_of_neutrons_per_pulse
-                value_to_convert = value_to_convert.to(required_units)
-
+        if any(x in required_units for x in ['per second', '/ second', '/second']):
+            value_to_convert = value_to_convert * self.number_of_neutrons_per_second
             value_to_convert = value_to_convert.to(required_units)
 
-            return value_to_convert
+        if any(x in required_units for x in ['per pulse', '/ pulse', '/pulse']):
+            value_to_convert = value_to_convert * self.number_of_neutrons_per_pulse
+            value_to_convert = value_to_convert.to(required_units)
+
+        value_to_convert = value_to_convert.to(required_units)
+
+        return value_to_convert
 
     def convert_units(self, value_to_convert, required_units):
 
-            if any(x in required_units[0] for x in ['per second', '/ second', '/second']):
-                value_to_convert[0] = value_to_convert[0] * self.number_of_neutrons_per_second
-                # value_to_convert[0] = value_to_convert[0].to(required_units[0])
+        if any(x in required_units[0] for x in ['per second', '/ second', '/second']):
+            value_to_convert[0] = value_to_convert[0] * self.number_of_neutrons_per_second
+            # value_to_convert[0] = value_to_convert[0].to(required_units[0])
 
-            if any(x in required_units[0] for x in ['per pulse', '/ pulse', '/pulse']):
-                value_to_convert[0] = value_to_convert[0] * self.number_of_neutrons_per_pulse
-                # value_to_convert[0] = value_to_convert[0].to(required_units[0])
+        if any(x in required_units[0] for x in ['per pulse', '/ pulse', '/pulse']):
+            value_to_convert[0] = value_to_convert[0] * self.number_of_neutrons_per_pulse
+            # value_to_convert[0] = value_to_convert[0].to(required_units[0])
 
-            value_to_convert[0] = value_to_convert[0].to(required_units[0])
-            value_to_convert[1] = value_to_convert[1].to(required_units[1])
+        value_to_convert[0] = value_to_convert[0].to(required_units[0])
+        value_to_convert[1] = value_to_convert[1].to(required_units[1])
 
-            return value_to_convert
+        return value_to_convert
