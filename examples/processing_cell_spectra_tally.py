@@ -18,7 +18,7 @@ print(f'spectra with base units = {result}', end='\n\n')
 # returns the tally with normalisation per pulse
 result = statepoint.process_tally(
     tally=my_tally,
-    required_units=['centimeter / pulse', 'eV'],
+    required_units=['eV', 'centimeter / pulse'],
     fusion_energy_per_pulse=1.3e6
 )
 print(f'spectra per pulse = {result}', end='\n\n')
@@ -28,25 +28,17 @@ print(f'spectra per pulse = {result}', end='\n\n')
 print(f'spectra per second = {result}', end='\n\n')
 result = statepoint.process_tally(
     tally=my_tally,
-    required_units=['centimeter / second', 'eV'],
+    required_units=['MeV', 'centimeter / second'],
     fusion_power=1e9
 )
 print(f'spectra per pulse = {result}', end='\n\n')
 
 
 
-# import json
-
-# with open('results.json') as f:
-#   data = json.load(f)
-
-# x=data['652_neutron_spectra']['flux per second']['energy'][:-1]
-# y=data['652_neutron_spectra']['flux per second']['result']
-# y_err=data['652_neutron_spectra']['flux per second']['std. dev.']
 
 opp.plot_step_line_graph(
     x_label='Energy [MeV]',
-    y_label='neutron flux [particles/cm2-s]',
+    y_label='neutron flux [centimeter / second]',
     x_scale='log',
     y_scale='log',
     x=result[0],
@@ -55,6 +47,3 @@ opp.plot_step_line_graph(
     trim_zeros=False,
     filename='step_line_graph.png'
 )
-
-# with open('results.json') as f:
-#   data = json.load(f)

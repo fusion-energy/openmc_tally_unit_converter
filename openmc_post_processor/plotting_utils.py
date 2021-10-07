@@ -38,8 +38,8 @@ def plot_step_line_graph(
         the matplotlib.pyplot object produced
     """
 
-    # x=x[:-1]
-    y=y[:-1]
+    x=x[:-1]
+    # y=y[:-1]
 
     if trim_zeros is True:
         y = np.trim_zeros(np.array(y))
