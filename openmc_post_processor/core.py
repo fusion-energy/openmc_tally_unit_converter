@@ -20,9 +20,21 @@ class StatePoint(openmc.StatePoint):
 
         super().__init__(filepath=self.filepath)
 
+
     def get_tally_units(self, tally):
         """
         """
+
+        # could be used to find particle
+        # for filter in tally.filters:
+        #     if isinstance(filter, openmc.filter.ParticleFilter):
+        #         particle = filter.bins
+
+        # could be used to find cells and then volume
+        # for filter in tally.filters:
+        #     if isinstance(filter, openmc.filter.CellFilter):
+        #         cells = filter.bins
+
         # todo add logic that assigns Pint units to a tally
         # this can be ascertained by the tally filters / scores
         # as a first pass the tally.name can be used
@@ -32,8 +44,11 @@ class StatePoint(openmc.StatePoint):
             return [ureg.electron_volt / ureg.simulated_particle]
 
         if 'effective_dose' in tally.name:
-            # pSv cm^2
-            return [ureg.picosievert / ureg.simulated_particle]
+            # dose coefficients have pico sievert cm **2
+            # flux has cm2 / simulated_particle units
+            # dose on a surface uses a current score (units of per simulated_particle) and is therefore * area to get pSv / source particle
+            # dose on a volume uses a flux score (units of cm2 per simulated particle) and therefore gives Sv cm**2 / simulated particle
+            return [ureg.picosievert * ureg.centimeter **2 / ureg.simulated_particle]
 
         if 'flux' in tally.name:
             # tally has units of cm2 per simulated_particle

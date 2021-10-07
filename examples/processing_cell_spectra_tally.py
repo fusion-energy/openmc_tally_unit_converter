@@ -24,7 +24,7 @@ result = statepoint.process_tally(
 print(f'spectra per pulse = {result}', end='\n\n')
 
 
-# returns the tally with normalisation for source strength
+# returns the tally scalled and normalisation for source strength
 print(f'spectra per second = {result}', end='\n\n')
 result = statepoint.process_tally(
     tally=my_tally,
