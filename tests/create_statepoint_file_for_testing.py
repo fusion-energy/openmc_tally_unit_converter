@@ -1,47 +1,58 @@
-
 # This minimal example makes a 3D volume and exports the shape to a stp file
 # A surrounding volume called a graveyard is needed for neutronics simulations
 
 import openmc
 import openmc_dagmc_wrapper as odw
 import openmc_plasma_source as ops
-import paramak
-from stl_to_h5m import stl_to_h5m
+import openmc_data_downloader as odd
 
-my_shape = paramak.ExtrudeStraightShape(
-    points=[
-        (1, 1),
-        (1, 200),
-        (600, 200),
-        (600, 1)
-        ],
-    distance=180,
+
+# MATERIALS
+breeder_material = openmc.Material(1, "PbLi")  # Pb84.2Li15.8
+breeder_material.add_element("Pb", 84.2, percent_type="ao")
+breeder_material.add_element(
+    "Li",
+    15.8,
+    percent_type="ao",
+    enrichment=50.0,
+    enrichment_target="Li6",
+    enrichment_type="ao",
+)  # 50% enriched
+breeder_material.set_density("atom/b-cm", 3.2720171e-2)  # around 11 g/cm3
+
+iron = openmc.Material(name="iron")
+iron.set_density("g/cm3", 7.75)
+iron.add_element("Fe", 0.95, percent_type="wo")
+
+materials = openmc.Materials([breeder_material, iron])
+
+odd.just_in_time_library_generator(libraries="TENDL-2019", materials=materials)
+
+# GEOMETRY
+
+# surfaces
+vessel_inner = openmc.Sphere(r=500)
+first_wall_outer_surface = openmc.Sphere(r=510)
+breeder_blanket_outer_surface = openmc.Sphere(r=610, boundary_type="vacuum")
+
+
+# cells
+inner_vessel_region = -vessel_inner
+inner_vessel_cell = openmc.Cell(region=inner_vessel_region)
+
+first_wall_region = -first_wall_outer_surface & +vessel_inner
+first_wall_cell = openmc.Cell(region=first_wall_region)
+first_wall_cell.fill = iron
+
+breeder_blanket_region = +first_wall_outer_surface & -breeder_blanket_outer_surface
+breeder_blanket_cell = openmc.Cell(region=breeder_blanket_region)
+breeder_blanket_cell.fill = breeder_material
+
+universe = openmc.Universe(
+    cells=[inner_vessel_cell, first_wall_cell, breeder_blanket_cell]
 )
+geometry = openmc.Geometry(universe)
 
-my_shape.export_stl('steel.stl')
-
-# This script converts the CAD stl files generated into h5m files that can be
-# used in DAGMC enabled codes. h5m files created in this way are imprinted,
-# merged, faceted and ready for use in OpenMC. One of the key aspects of this
-# is the assignment of materials to the volumes present in the CAD files.
-
-stl_to_h5m(
-    files_with_tags=[('steel.stl', 'mat1')],
-    h5m_filename='dagmc.h5m',
-)
-
-# makes use of the previously created neutronics geometry (h5m file) and assigns
-# actual materials to the material tags. Sets simulation intensity and specifies
-# the neutronics results to record (know as tallies).
-
-geometry = odw.Geometry(
-    h5m_filename='dagmc.h5m',
-)
-
-materials = odw.Materials(
-    h5m_filename='dagmc.h5m',
-    correspondence_dict={"mat1": "eurofer"}
-)
 
 tally1 = odw.CellTally(
     tally_type="flux",
@@ -89,16 +100,40 @@ tally9 = odw.CellTally(
 )
 
 tally10 = odw.CellTally(
+    tally_type="neutron_spectra",
+    target=2,
+)
+
+tally11 = odw.CellTally(
+    tally_type="neutron_spectra",
+    target=3,
+)
+
+tally12 = odw.CellTally(
     tally_type="photon_spectra",
     target=1,
 )
 
-tally11 = odw.CellTally(
+tally13 = odw.CellTally(
     tally_type="(n,total)",
     target=1,
 )
 
-tallies = openmc.Tallies([tally1, tally2, tally3, tally4, tally5, tally6, tally7, tally8, tally9, tally10, tally11])
+tallies = openmc.Tallies(
+    [
+        tally1,
+        tally2,
+        tally3,
+        tally4,
+        tally5,
+        tally6,
+        tally7,
+        tally8,
+        tally9,
+        tally10,
+        tally11,
+    ]
+)
 
 settings = odw.FusionSettings()
 settings.batches = 2
@@ -108,7 +143,7 @@ settings.particles = 1000
 settings.source = ops.FusionPointSource()
 
 
-my_model = openmc.Model(
+my_model = openmc.model.Model(
     materials=materials, geometry=geometry, settings=settings, tallies=tallies
 )
 statepoint_file = my_model.run()
