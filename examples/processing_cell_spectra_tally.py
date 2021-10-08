@@ -33,9 +33,7 @@ result = statepoint.process_tally(
 )
 print(f'spectra per pulse = {result}', end='\n\n')
 
-
-
-
+# plots a graph of the results
 opp.plot_step_line_graph(
     x_label='Energy [MeV]',
     y_label='neutron flux [centimeter / second]',
