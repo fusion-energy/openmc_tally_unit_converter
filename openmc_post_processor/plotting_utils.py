@@ -1,5 +1,5 @@
 
-from typing import Iterable, Optional
+from typing import Iterable, Optional, Dict
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -7,24 +7,21 @@ from numpy.lib.function_base import trim_zeros
 
 
 def plot_step_line_graph(
-    x: Iterable[float],
-    y: Iterable[float],
-    y_err: Optional[Iterable[float]] = None,
+    values: Dict[str, Iterable[float]],
     x_label: Optional[str] = '',
     y_label: Optional[str] = '',
     x_scale: Optional[str] = 'linear',
     y_scale: Optional[str] = 'linear',
     title: Optional[str] = '',
     filename: Optional[str] = None,
-    trim_zeros: Optional[bool] = True
+    trim_zeros: Optional[bool] = True,
+    legend=True,
 ) -> plt:
     """Plots a stepped line graph with optional shaded region for Y error.
     Intended use for ploting neutron / photon spectra
 
     Arguments:
-        x: the x axis values of the plotted data,
-        y: the y axis values of the plotted data,
-        y_err: the y axis error values of the plotted data.
+        values: A dictionary of x, y, y_error values
         x_label: the label to use on the x axis,
         y_label: the label to use on the y axis,
         x_scale: the scale to use for the x axis. Options are 'linear', 'log'
@@ -38,36 +35,47 @@ def plot_step_line_graph(
         the matplotlib.pyplot object produced
     """
 
-    x=x[:-1]
-    # y=y[:-1]
+    for key, value in values.items():
+        x = value[0]
+        y = value[1]
+        if len(value) == 3:
+            y_err = value[2]
 
-    if trim_zeros is True:
-        y = np.trim_zeros(np.array(y))
-        x = np.array(x[:len(y)])
-        if y_err is not None:
-            y_err = np.array(y_err[:len(y)])
-    else:
-        y = np.array(y)
-        x = np.array(x)
-        if y_err is not None:
-            y_err = np.array(y_err)
+        # trimming required for spectra energy groups which have one more energy bin
+        if len(x) == len(y) + 1:
+            x = x[:-1]
 
-    plt.xlabel(x_label)
-    plt.ylabel(y_label)
+        if trim_zeros is True:
+            y = np.trim_zeros(np.array(y))
+            x = np.array(x[:len(y)])
+            if len(value) == 3:
+                y_err = np.array(y_err[:len(y)])
+        else:
+            y = np.array(y)
+            x = np.array(x)
+            if len(value) == 3:
+                y_err = np.array(y_err)
 
-    # mid and post are also options but pre is used as energy bins start from 0
-    plt.step(x, y, where='pre', label='pre (default)')
+        plt.xlabel(x_label)
+        plt.ylabel(y_label)
 
-    plt.yscale(y_scale)
-    plt.xscale(x_scale)
+        # mid and post are also options but pre is used as energy bins start from 0
+        plt.step(x, y, where='pre', label=key)
 
-    if y_err is not None:
-        lower_y = y-y_err
-        upper_y = y+y_err
-        plt.fill_between(x, lower_y, upper_y, step='pre', color='k', alpha=0.15)
+        plt.yscale(y_scale)
+        plt.xscale(x_scale)
 
+        if len(value) == 3:
+            lower_y = y-y_err
+            upper_y = y+y_err
+            plt.fill_between(x, lower_y, upper_y, step='pre', color='k', alpha=0.15)
+
+    if legend:
+        plt.legend()
     plt.title(title)
     if filename:
-        plt.savefig(filename, bbox_inches='tight')
+        plt.savefig(filename, bbox_inches='tight', dpi=400)
+
+    plt.close()
 
     return plt
