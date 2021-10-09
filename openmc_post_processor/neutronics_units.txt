@@ -1,8 +1,8 @@
 
 # base units for neutronics
 
-particles = []
-neutrons = []
-photons = []
+particle = []
+neutron = []
+photon = []
 simulated_particle = []
 pulse = []

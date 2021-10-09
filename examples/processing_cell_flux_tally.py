@@ -22,7 +22,7 @@ result = statepoint.process_tally(
     tally=my_tally,
     required_units='meter / simulated_particle'
 )
-print(f'flux scalled base units = {result}', end='\n\n')
+print(f'flux scaled base units = {result}', end='\n\n')
 
 
 # returns the tally with normalisation per pulse

@@ -33,63 +33,51 @@ def find_fusion_energy_per_reaction(reactants: str) -> float:
 
     return fusion_energy_per_reaction_j
 
-def get_particle_from_tally_filters(tally):
+def get_particles_from_tally_filters(tally, ureg):
+    particles = []
     for filter in tally.filters:
-        if isinstance(filter, openmc.filter.EnergyFilter):
+        if isinstance(filter, openmc.filter.ParticleFilter):
+            # assumes particle filters bin is a list of 1
+            particles.append(filter.bins[0])
+    if len(particles) == 0:
+        particles=['particle']
+    print(particles)
+    units_string = ' * '.join(set(particles))
+    return ureg(units_string)
 
-def get_tally_units(tally):
+def get_cell_ids_from_tally_filters(tally):
+    cell_ids = []
+    for filter in tally.filters:
+        if isinstance(filter, openmc.filter.CellFilter):
+            cell_ids.append(filter.bins)
+    return cell_ids    
+
+def get_tally_units(tally, ureg):
     """
     """
-
-    # could be used to find particle
-    # for filter in tally.filters:
-    #     if isinstance(filter, openmc.filter.ParticleFilter):
-    #         particle = filter.bins
-
-    # could be used to find cells and then volume
-    # for filter in tally.filters:
-    #     if isinstance(filter, openmc.filter.CellFilter):
-    #         cells = filter.bins
-
-    # todo add logic that assigns Pint units to a tally
-    # this can be ascertained by the tally filters / scores
-    # as a first pass the tally.name can be used
 
     if tally.scores == ['flux']:
-        units = ureg.centimeter / ureg.simulated_particle
-
-    if 'heating' in tally.name:
-        # 'electron_volt / simulated_particle'
-        units = ureg.electron_volt / ureg.simulated_particle
-
-
-
-    if 'effective_dose' in tally.name:
-        # dose coefficients have pico sievert cm **2
-        # flux has cm2 / simulated_particle units
-        # dose on a surface uses a current score (units of per simulated_particle) and is therefore * area to get pSv / source particle
-        # dose on a volume uses a flux score (units of cm2 per simulated particle) and therefore gives pSv cm**4 / simulated particle
-        return [ureg.picosievert * ureg.centimeter **2 / ureg.simulated_particle]
-
-    if 'neutron_flux' in tally.name:
-        # tally has units of cm2 per simulated_particle
-        # discussion on openmc units of flux
+        # tally has units of particle-cm2 per simulated_particle
         # https://openmc.discourse.group/t/normalizing-tally-to-get-flux-value/99/4
-        return [ureg.neutrons * ureg.centimeter / ureg.simulated_particle]
+        units = get_particles_from_tally_filters(tally, ureg)
+        units = [units * ureg.centimeter / ureg.simulated_particle]
+        for filter in tally.filters:
+            if isinstance(filter, openmc.filter.EnergyFilter):
+                # spectra tally has units for the energy as well as the flux
+                units = [ureg.electron_volt, units[0]]
+            if isinstance(filter, openmc.filter.EnergyFunctionFilter):
+                # effective_dose
+                # dose coefficients have pico sievert cm **2
+                # flux has cm2 / simulated_particle units
+                # dose on a surface uses a current score (units of per simulated_particle) and is therefore * area to get pSv / source particle
+                # dose on a volume uses a flux score (units of cm2 per simulated particle) and therefore gives pSv cm**4 / simulated particle
+                units = [ureg.picosievert * ureg.centimeter * units[0]]
 
-    if 'photon_flux' in tally.name:
-        # tally has units of cm2 per simulated_particle
-        # discussion on openmc units of flux
-        # https://openmc.discourse.group/t/normalizing-tally-to-get-flux-value/99/4
-        return [ureg.photon * ureg.centimeter / ureg.simulated_particle]
-
-    if 'spectra' in tally.name:
-        # tally (flux) has units of cm2 per simulated_particle
-        # energy has units of electron volt
-        return [ureg.electron_volt, ureg.centimeter / ureg.simulated_particle]
-
-    # TODO damage-energy units of eV per source particle
+    elif tally.scores == ['heating']:
+        # heating units are eV / simulated_particle
+        units = [ureg.electron_volt / ureg.simulated_particle]
 
     else:
-        # default tallies are per simulated_particle
-        return [1 / ureg.simulated_particle]
+        raise ValueError("units for tally can't be found, supported tallies are currently limited")
+
+    return units

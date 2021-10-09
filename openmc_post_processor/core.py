@@ -5,7 +5,7 @@ import numpy as np
 import openmc
 import pint
 
-from openmc_post_processor import find_fusion_energy_per_reaction
+from openmc_post_processor import find_fusion_energy_per_reaction, get_tally_units
 
 ureg = pint.UnitRegistry()
 ureg.load_definitions(str(Path(__file__).parent / "neutronics_units.txt"))
@@ -40,13 +40,13 @@ class StatePoint(openmc.StatePoint):
 
         if fusion_power:
             fusion_power = fusion_power * ureg.watts
-            fusion_energy_per_reaction_j = find_fusion_energy_per_reaction(reactants) * ureg.joules
+            fusion_energy_per_reaction_j = find_fusion_energy_per_reaction(reactants) * ureg.joules / ureg.neutrons
             self.number_of_neutrons_per_second = fusion_power / fusion_energy_per_reaction_j
             print(f'number_of_neutrons_per_second {self.number_of_neutrons_per_second.to_base_units()}')
 
         if fusion_energy_per_pulse is not None:
             fusion_energy_per_pulse = fusion_energy_per_pulse * ureg.joules / ureg.pulse
-            fusion_energy_per_reaction_j = find_fusion_energy_per_reaction(reactants) * ureg.joules
+            fusion_energy_per_reaction_j = find_fusion_energy_per_reaction(reactants) * ureg.joules / ureg.neutrons
             self.number_of_neutrons_per_pulse = fusion_energy_per_pulse / fusion_energy_per_reaction_j
             print(f'number_of_neutrons_per_pulse {self.number_of_neutrons_per_pulse.to_base_units()}')
 
@@ -54,13 +54,24 @@ class StatePoint(openmc.StatePoint):
 
         # checks for user provided base units
         if not base_units:
-            base_units = self.get_tally_units(tally)
+            base_units = get_tally_units(tally, ureg)
             print(f'tally {tally.name} base units {base_units}')
 
         # there might be more than one based unit entry if spectra has been tallied
         if len(base_units) == 1:
             tally_result = data_frame["mean"].sum() * base_units[0]
             if required_units:
+                print(f'tally {tally.name} required units {ureg[required_units]}')
+
+                unit_diff = base_units[0] * ureg[required_units]
+
+                # these are not ideal methods of checking
+                if '/ [time]' in str(unit_diff.dimensionality):
+                    print('* time needed')
+                    # base_units[0] = base_units[0] * self.number_of_neutrons_per_pulse
+                if base_units[0].dimensionality == '[length]' and ureg[required_units].dimensionality == '1 / [length] ** 2':
+                    print('/ volume needed')
+                
                 tally_result = self.convert_unit(tally_result, required_units)
         else:  
 
