@@ -1,6 +1,7 @@
 
 import openmc
 
+
 def find_fusion_energy_per_reaction(reactants: str) -> float:
     """Finds the average fusion energy produced per fusion reaction in joules
     from the fuel type.
@@ -32,6 +33,15 @@ def find_fusion_energy_per_reaction(reactants: str) -> float:
     fusion_energy_per_reaction_j = fusion_energy_per_reaction_ev * 1.602176487e-19
 
     return fusion_energy_per_reaction_j
+
+def find_source_strength(
+    fusion_energy_per_second_or_per_pulse=None,
+    reactants='DT'
+) -> float:
+
+    fusion_energy_per_reaction_j = find_fusion_energy_per_reaction(reactants)
+    number_of_neutrons = fusion_energy_per_second_or_per_pulse / fusion_energy_per_reaction_j
+    return number_of_neutrons
 
 def get_particles_from_tally_filters(tally, ureg):
     particles = []
@@ -81,3 +91,16 @@ def get_tally_units(tally, ureg):
         raise ValueError("units for tally can't be found, supported tallies are currently limited")
 
     return units
+
+def check_for_dimentionality_difference(units_1, units_2, unit_to_compare):
+    units_1_time_power = units_1.dimensionality.get(unit_to_compare)
+    units_2_time_power = units_2.dimensionality.get(unit_to_compare)
+    print('unit_1', units_1.dimensionality)
+    print('unit_2', units_2.dimensionality)
+    return units_1_time_power - units_2_time_power
+
+
+# import pint
+# ureg = pint.UnitRegistry()
+# diff = check_for_dimentionality_difference_for_time(ureg['cm**2 / s'],ureg['m * s**2'])
+# print(diff)

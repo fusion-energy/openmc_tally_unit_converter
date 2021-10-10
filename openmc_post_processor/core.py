@@ -5,7 +5,7 @@ import numpy as np
 import openmc
 import pint
 
-from openmc_post_processor import find_fusion_energy_per_reaction, get_tally_units
+from openmc_post_processor import find_fusion_energy_per_reaction, get_tally_units, check_for_dimentionality_difference
 
 ureg = pint.UnitRegistry()
 ureg.load_definitions(str(Path(__file__).parent / "neutronics_units.txt"))
@@ -26,9 +26,8 @@ class StatePoint(openmc.StatePoint):
         tally,
         required_units=None,
         base_units=None,
-        fusion_power=None,
-        fusion_energy_per_pulse=None,
-        reactants='DT'
+        source_strength=None,
+        cell_volume=None,
     ):
         """Processes the tally converting the tally with default units obtained
         during simulation into the user specified units. In some cases
@@ -38,17 +37,6 @@ class StatePoint(openmc.StatePoint):
         # passes the tally into this function along with the required units
         # the tally can be returned with base units or with converted units
 
-        if fusion_power:
-            fusion_power = fusion_power * ureg.watts
-            fusion_energy_per_reaction_j = find_fusion_energy_per_reaction(reactants) * ureg.joules / ureg.neutrons
-            self.number_of_neutrons_per_second = fusion_power / fusion_energy_per_reaction_j
-            print(f'number_of_neutrons_per_second {self.number_of_neutrons_per_second.to_base_units()}')
-
-        if fusion_energy_per_pulse is not None:
-            fusion_energy_per_pulse = fusion_energy_per_pulse * ureg.joules / ureg.pulse
-            fusion_energy_per_reaction_j = find_fusion_energy_per_reaction(reactants) * ureg.joules / ureg.neutrons
-            self.number_of_neutrons_per_pulse = fusion_energy_per_pulse / fusion_energy_per_reaction_j
-            print(f'number_of_neutrons_per_pulse {self.number_of_neutrons_per_pulse.to_base_units()}')
 
         data_frame = tally.get_pandas_dataframe()
 
@@ -63,14 +51,32 @@ class StatePoint(openmc.StatePoint):
             if required_units:
                 print(f'tally {tally.name} required units {ureg[required_units]}')
 
-                unit_diff = base_units[0] * ureg[required_units]
+                time_diff = check_for_dimentionality_difference(base_units[0], ureg[required_units], '[time]')
+                if  time_diff != 0:
+                    print('time scaling needed (seconds)')
+                    source_strength = source_strength * ureg['1 / second']
+                    if time_diff == -1:
+                        tally_result = tally_result / source_strength
+                    if time_diff == 1:
+                        tally_result = tally_result * source_strength
 
-                # these are not ideal methods of checking
-                if '/ [time]' in str(unit_diff.dimensionality):
-                    print('* time needed')
-                    # base_units[0] = base_units[0] * self.number_of_neutrons_per_pulse
-                if base_units[0].dimensionality == '[length]' and ureg[required_units].dimensionality == '1 / [length] ** 2':
-                    print('/ volume needed')
+                time_diff = check_for_dimentionality_difference(base_units[0], ureg[required_units], '[pulse]')
+                if  time_diff != 0:
+                    print('time scaling needed (pulse)')
+                    source_strength = source_strength * ureg['1 / pulse']
+                    if time_diff == -1:
+                        tally_result = tally_result / source_strength
+                    if time_diff == 1:
+                        tally_result = tally_result * source_strength
+
+                length_diff = check_for_dimentionality_difference(base_units[0], ureg[required_units], '[length]')
+                if length_diff != 0:
+                    print('length scaling needed')
+                    if time_diff == -3:
+                        tally_result = tally_result / cell_volume
+                    if time_diff == 3:
+                        tally_result = tally_result * cell_volume
+
                 
                 tally_result = self.convert_unit(tally_result, required_units)
         else:  
@@ -90,13 +96,9 @@ class StatePoint(openmc.StatePoint):
 
     def convert_unit(self, value_to_convert, required_units):
 
-        if any(x in required_units for x in ['per second', '/ second', '/second']):
-            value_to_convert = value_to_convert * self.number_of_neutrons_per_second
-            value_to_convert = value_to_convert.to(required_units)
-
-        if any(x in required_units for x in ['per pulse', '/ pulse', '/pulse']):
-            value_to_convert = value_to_convert * self.number_of_neutrons_per_pulse
-            value_to_convert = value_to_convert.to(required_units)
+        # if any(x in required_units for x in ['per pulse', '/ pulse', '/pulse']):
+        #     value_to_convert = value_to_convert * self.number_of_neutrons_per_pulse
+        #     value_to_convert = value_to_convert.to(required_units)
 
         value_to_convert = value_to_convert.to(required_units)
 
@@ -104,13 +106,13 @@ class StatePoint(openmc.StatePoint):
 
     def convert_units(self, value_to_convert, required_units):
 
-        if any(x in required_units[1] for x in ['per second', '/ second', '/second']):
-            value_to_convert[1] = value_to_convert[1] * self.number_of_neutrons_per_second
-            # value_to_convert[1] = value_to_convert[1].to(required_units[1])
+        # if any(x in required_units[1] for x in ['per second', '/ second', '/second']):
+        #     value_to_convert[1] = value_to_convert[1] * self.number_of_neutrons_per_second
+        #     # value_to_convert[1] = value_to_convert[1].to(required_units[1])
 
-        if any(x in required_units[1] for x in ['per pulse', '/ pulse', '/pulse']):
-            value_to_convert[1] = value_to_convert[1] * self.number_of_neutrons_per_pulse
-            # value_to_convert[1] = value_to_convert[1].to(required_units[1])
+        # if any(x in required_units[1] for x in ['per pulse', '/ pulse', '/pulse']):
+        #     value_to_convert[1] = value_to_convert[1] * self.number_of_neutrons_per_pulse
+        #     # value_to_convert[1] = value_to_convert[1].to(required_units[1])
 
         value_to_convert[1] = value_to_convert[1].to(required_units[1])
         value_to_convert[0] = value_to_convert[0].to(required_units[0])
