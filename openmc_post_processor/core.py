@@ -50,36 +50,10 @@ class StatePoint(openmc.StatePoint):
             tally_result = data_frame["mean"].sum() * base_units[0]
             if required_units:
                 print(f'tally {tally.name} required units {ureg[required_units]}')
-
-                time_diff = check_for_dimentionality_difference(base_units[0], ureg[required_units], '[time]')
-                if  time_diff != 0:
-                    print('time scaling needed (seconds)')
-                    source_strength = source_strength * ureg['1 / second']
-                    if time_diff == -1:
-                        tally_result = tally_result / source_strength
-                    if time_diff == 1:
-                        tally_result = tally_result * source_strength
-
-                time_diff = check_for_dimentionality_difference(base_units[0], ureg[required_units], '[pulse]')
-                if  time_diff != 0:
-                    print('time scaling needed (pulse)')
-                    source_strength = source_strength * ureg['1 / pulse']
-                    if time_diff == -1:
-                        tally_result = tally_result / source_strength
-                    if time_diff == 1:
-                        tally_result = tally_result * source_strength
-
-                length_diff = check_for_dimentionality_difference(base_units[0], ureg[required_units], '[length]')
-                if length_diff != 0:
-                    print('length scaling needed')
-                    if time_diff == -3:
-                        tally_result = tally_result / cell_volume
-                    if time_diff == 3:
-                        tally_result = tally_result * cell_volume
-
-                
+                base_units, required_units, ureg
+                tally_result = self.scale_tally(tally_result, base_units[0], ureg[required_units], ureg, source_strength, cell_volume)
                 tally_result = self.convert_unit(tally_result, required_units)
-        else:  
+        else:
 
             tally_result = []
             for filter in tally.filters:
@@ -96,25 +70,42 @@ class StatePoint(openmc.StatePoint):
 
     def convert_unit(self, value_to_convert, required_units):
 
-        # if any(x in required_units for x in ['per pulse', '/ pulse', '/pulse']):
-        #     value_to_convert = value_to_convert * self.number_of_neutrons_per_pulse
-        #     value_to_convert = value_to_convert.to(required_units)
-
         value_to_convert = value_to_convert.to(required_units)
 
         return value_to_convert
 
     def convert_units(self, value_to_convert, required_units):
 
-        # if any(x in required_units[1] for x in ['per second', '/ second', '/second']):
-        #     value_to_convert[1] = value_to_convert[1] * self.number_of_neutrons_per_second
-        #     # value_to_convert[1] = value_to_convert[1].to(required_units[1])
-
-        # if any(x in required_units[1] for x in ['per pulse', '/ pulse', '/pulse']):
-        #     value_to_convert[1] = value_to_convert[1] * self.number_of_neutrons_per_pulse
-        #     # value_to_convert[1] = value_to_convert[1].to(required_units[1])
-
         value_to_convert[1] = value_to_convert[1].to(required_units[1])
         value_to_convert[0] = value_to_convert[0].to(required_units[0])
 
         return value_to_convert
+
+    def scale_tally(self, tally_result, base_units, required_units, ureg, source_strength, cell_volume):
+        time_diff = check_for_dimentionality_difference(base_units, required_units, '[time]')
+        if  time_diff != 0:
+            print('time scaling needed (seconds)')
+            source_strength = source_strength * ureg['1 / second']
+            if time_diff == -1:
+                tally_result = tally_result / source_strength
+            if time_diff == 1:
+                tally_result = tally_result * source_strength
+
+        time_diff = check_for_dimentionality_difference(base_units, required_units, '[pulse]')
+        if  time_diff != 0:
+            print('time scaling needed (pulse)')
+            source_strength = source_strength * ureg['1 / pulse']
+            if time_diff == -1:
+                tally_result = tally_result / source_strength
+            if time_diff == 1:
+                tally_result = tally_result * source_strength
+
+        length_diff = check_for_dimentionality_difference(base_units, required_units, '[length]')
+        if length_diff != 0:
+            print('length scaling needed')
+            if time_diff == -3:
+                tally_result = tally_result / cell_volume
+            if time_diff == 3:
+                tally_result = tally_result * cell_volume
+
+        return tally_result
