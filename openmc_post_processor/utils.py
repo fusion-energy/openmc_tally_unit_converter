@@ -52,7 +52,6 @@ def get_particles_from_tally_filters(tally, ureg):
             particles.append(filter.bins[0])
     if len(particles) == 0:
         particles = ["particle"]
-    print(particles)
     units_string = " * ".join(set(particles))
     return ureg(units_string)
 
@@ -100,12 +99,9 @@ def get_tally_units(tally, ureg):
 def check_for_dimentionality_difference(units_1, units_2, unit_to_compare):
     units_1_time_power = units_1.dimensionality.get(unit_to_compare)
     units_2_time_power = units_2.dimensionality.get(unit_to_compare)
-    print("unit_1", units_1.dimensionality)
-    print("unit_2", units_2.dimensionality)
     return units_1_time_power - units_2_time_power
 
 
 # import pint
 # ureg = pint.UnitRegistry()
-# diff = check_for_dimentionality_difference_for_time(ureg['cm**2 / s'],ureg['m * s**2'])
-# print(diff)
+# diff = check_for_dimentionality_difference_for_time(ureg['cm**2 / s'],ureg['m * s**2']

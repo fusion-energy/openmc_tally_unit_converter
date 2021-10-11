@@ -20,7 +20,6 @@ class StatePoint(openmc.StatePoint):
         self,
         tally,
         required_units=None,
-        base_units=None,
         source_strength=None,
         volume=None,
     ):
@@ -35,9 +34,8 @@ class StatePoint(openmc.StatePoint):
         data_frame = tally.get_pandas_dataframe()
 
         # checks for user provided base units
-        if not base_units:
-            base_units = get_tally_units(tally, ureg)
-            print(f"tally {tally.name} base units {base_units}")
+        base_units = get_tally_units(tally, ureg)
+        print(f"tally {tally.name} base units {base_units}")
 
         # there might be more than one based unit entry if spectra has been tallied
         if len(base_units) == 1:
@@ -45,22 +43,16 @@ class StatePoint(openmc.StatePoint):
                 # just a single number in the tally result
                 tally_result = data_frame["mean"].sum() * base_units[0]
             else:
-                print("found mesh tally")
                 # more than one number, a mesh tally
-                # my_slice = tally.get_slice(scores=tally.scores)
                 tally_filter = tally.find_filter(filter_type=openmc.MeshFilter)
                 shape = tally_filter.mesh.dimension.tolist()
                 if 1 in shape:
                     # 2d mesh
                     shape.remove(1)
-                # my_slice.mean.shape = shape
-                # tally_result = my_slice.mean * base_units[0]
                 tally_result = np.array(data_frame["mean"]) * base_units[0]
                 tally_result = tally_result.reshape(shape)
 
             if required_units:
-                print(f"tally {tally.name} required units {ureg[required_units]}")
-                # base_units, required_units, ureg
                 tally_result = self.scale_tally(
                     tally_result,
                     base_units[0],
@@ -105,7 +97,6 @@ class StatePoint(openmc.StatePoint):
             converted_units.append(value.to(required))
 
         return converted_units
-
 
     def scale_tally(
         self, tally_result, base_units, required_units, ureg, source_strength, volume

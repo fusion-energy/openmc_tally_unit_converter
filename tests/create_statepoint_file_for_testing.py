@@ -56,47 +56,47 @@ geometry = openmc.Geometry(universe)
 
 tally1 = odw.CellTally(
     tally_type="flux",
-    target=1,
+    target=2,
 )
 
 tally2 = odw.CellTally(
     tally_type="neutron_spectra",
-    target=1,
+    target=2,
 )
 
 tally3 = odw.CellTally(
     tally_type="TBR",
-    target=1,
+    target=2,
 )
 
 tally4 = odw.CellTally(
     tally_type="heating",
-    target=1,
+    target=2,
 )
 
 tally5 = odw.CellTally(
     tally_type="neutron_effective_dose",
-    target=1,
+    target=2,
 )
 
 tally6 = odw.CellTally(
     tally_type="photon_effective_dose",
-    target=1,
+    target=2,
 )
 
 tally7 = odw.CellTally(
     tally_type="neutron_fast_flux",
-    target=1,
+    target=2,
 )
 
 tally8 = odw.CellTally(
     tally_type="photon_fast_flux",
-    target=1,
+    target=2,
 )
 
 tally9 = odw.CellTally(
     tally_type="neutron_spectra",
-    target=1,
+    target=2,
 )
 
 tally10 = odw.CellTally(
@@ -111,12 +111,12 @@ tally11 = odw.CellTally(
 
 tally12 = odw.CellTally(
     tally_type="photon_spectra",
-    target=1,
+    target=2,
 )
 
 tally13 = odw.CellTally(
     tally_type="(n,total)",
-    target=1,
+    target=2,
 )
 
 tally14 = odw.MeshTally2D(
