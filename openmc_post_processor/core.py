@@ -69,7 +69,7 @@ class StatePoint(openmc.StatePoint):
                     source_strength,
                     volume,
                 )
-                tally_result = self.convert_unit(tally_result, required_units)
+                tally_result = self.convert_units([tally_result], [required_units])[0]
         else:
 
             tally_result = []
@@ -99,18 +99,13 @@ class StatePoint(openmc.StatePoint):
 
         return tally_result
 
-    def convert_unit(self, value_to_convert, required_units):
-
-        value_to_convert = value_to_convert.to(required_units)
-
-        return value_to_convert
-
     def convert_units(self, value_to_convert, required_units):
+        converted_units = []
+        for value, required in zip(value_to_convert, required_units):
+            converted_units.append(value.to(required))
 
-        value_to_convert[1] = value_to_convert[1].to(required_units[1])
-        value_to_convert[0] = value_to_convert[0].to(required_units[0])
+        return converted_units
 
-        return value_to_convert
 
     def scale_tally(
         self, tally_result, base_units, required_units, ureg, source_strength, volume
