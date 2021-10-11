@@ -128,10 +128,17 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# openmc outputs
+# output files from simulations
+*.png
+*.vtk
+*.jou
+*.cub
+*.json
+*.xml
 *.h5
 *.h5m
-*.out
 *.stl
-*.xml
-*.vscode/
+*.stp
+*.trelis
+*.out
+*.tar.gz
