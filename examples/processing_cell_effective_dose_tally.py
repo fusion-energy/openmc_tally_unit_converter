@@ -26,7 +26,7 @@ print(f'effective dose scaled base units = {result}', end='\n\n')
 
 # returns the tally with normalisation per pulse
 result = statepoint.process_tally(
-    fusion_energy_per_pulse=1.3e6,
+    source_strength=1.3e6,
     tally=my_tally,
     required_units='sievert cm **2 / pulse'
 )
@@ -35,7 +35,7 @@ print(f'effective dose per pulse = {result}', end='\n\n')
 
 # returns the tally with normalisation for source strength
 statepoint.process_tally(
-    fusion_power=1e9,
+    source_strength=1.3e6,
     tally=my_tally,
     required_units='Sv cm **2 / second'
 )

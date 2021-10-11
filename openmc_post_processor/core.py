@@ -27,7 +27,7 @@ class StatePoint(openmc.StatePoint):
         required_units=None,
         base_units=None,
         source_strength=None,
-        cell_volume=None,
+        volume=None,
     ):
         """Processes the tally converting the tally with default units obtained
         during simulation into the user specified units. In some cases
@@ -51,7 +51,7 @@ class StatePoint(openmc.StatePoint):
             if required_units:
                 print(f'tally {tally.name} required units {ureg[required_units]}')
                 base_units, required_units, ureg
-                tally_result = self.scale_tally(tally_result, base_units[0], ureg[required_units], ureg, source_strength, cell_volume)
+                tally_result = self.scale_tally(tally_result, base_units[0], ureg[required_units], ureg, source_strength, volume)
                 tally_result = self.convert_unit(tally_result, required_units)
         else:
 
@@ -81,31 +81,41 @@ class StatePoint(openmc.StatePoint):
 
         return value_to_convert
 
-    def scale_tally(self, tally_result, base_units, required_units, ureg, source_strength, cell_volume):
+    def scale_tally(self, tally_result, base_units, required_units, ureg, source_strength, volume):
         time_diff = check_for_dimentionality_difference(base_units, required_units, '[time]')
         if  time_diff != 0:
             print('time scaling needed (seconds)')
-            source_strength = source_strength * ureg['1 / second']
-            if time_diff == -1:
-                tally_result = tally_result / source_strength
-            if time_diff == 1:
-                tally_result = tally_result * source_strength
+            if source_strength:
+                source_strength = source_strength * ureg['1 / second']
+                if time_diff == -1:
+                    tally_result = tally_result / source_strength
+                if time_diff == 1:
+                    tally_result = tally_result * source_strength
+            else:
+                raise ValueError(f'source_strength is required but currently set to {source_strength}')
 
         time_diff = check_for_dimentionality_difference(base_units, required_units, '[pulse]')
         if  time_diff != 0:
             print('time scaling needed (pulse)')
-            source_strength = source_strength * ureg['1 / pulse']
-            if time_diff == -1:
-                tally_result = tally_result / source_strength
-            if time_diff == 1:
-                tally_result = tally_result * source_strength
+            if source_strength:
+                source_strength = source_strength * ureg['1 / pulse']
+                if time_diff == -1:
+                    tally_result = tally_result / source_strength
+                if time_diff == 1:
+                    tally_result = tally_result * source_strength
+            else:
+                raise ValueError(f'source_strength is required but currently set to {source_strength}')
 
         length_diff = check_for_dimentionality_difference(base_units, required_units, '[length]')
         if length_diff != 0:
             print('length scaling needed')
-            if time_diff == -3:
-                tally_result = tally_result / cell_volume
-            if time_diff == 3:
-                tally_result = tally_result * cell_volume
+            if volume:
+                volume = volume * ureg['1 / centimeter ** 3']
+                if length_diff == -3:
+                    tally_result = tally_result / volume
+                if length_diff == 3:
+                    tally_result = tally_result * volume
+            else:
+                raise ValueError(f'volume is required but currently set to {volume}')
 
         return tally_result

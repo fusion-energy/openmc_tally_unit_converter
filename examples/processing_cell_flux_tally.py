@@ -52,9 +52,10 @@ result = statepoint.process_tally(
 print(f'flux per pulse = {result}', end='\n\n')
 
 # returns the tally with normalisation for volume
-# result = statepoint.process_tally(
-#     source_strength=1e9,
-#     tally=my_tally,
-#     required_units='1 / centimeter ** 2'
-# )
-# print(f'flux per second = {result}', end='\n\n')
+result = statepoint.process_tally(
+    # source_strength=1e9,
+    volume=100,
+    tally=my_tally,
+    required_units='1 / centimeter ** 2'
+)
+print(f'flux per second = {result}', end='\n\n')
