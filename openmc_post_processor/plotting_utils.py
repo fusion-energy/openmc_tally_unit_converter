@@ -1,4 +1,3 @@
-
 from typing import Iterable, Optional, Dict
 
 import matplotlib.pyplot as plt
@@ -6,16 +5,30 @@ import numpy as np
 from numpy.lib.function_base import trim_zeros
 
 
+def plot_2d_mesh_tally(
+    values: np.ndarray,
+    filename: Optional[str] = None,
+):
+
+    fig = plt.subplot()
+    image_map = fig.imshow(values).get_figure()
+    if filename:
+        image_map.savefig(filename, dpi=300)
+    fig.clear()
+
+    return fig
+
+
 def plot_step_line_graph(
     values: Dict[str, Iterable[float]],
-    x_label: Optional[str] = '',
-    y_label: Optional[str] = '',
-    x_scale: Optional[str] = 'linear',
-    y_scale: Optional[str] = 'linear',
-    title: Optional[str] = '',
-    filename: Optional[str] = None,
+    x_label: Optional[str] = "",
+    y_label: Optional[str] = "",
+    x_scale: Optional[str] = "linear",
+    y_scale: Optional[str] = "linear",
+    title: Optional[str] = "",
     trim_zeros: Optional[bool] = True,
-    legend=True,
+    legend: Optional[bool] = True,
+    filename: Optional[str] = None,
 ) -> plt:
     """Plots a stepped line graph with optional shaded region for Y error.
     Intended use for ploting neutron / photon spectra
@@ -47,9 +60,9 @@ def plot_step_line_graph(
 
         if trim_zeros is True:
             y = np.trim_zeros(np.array(y))
-            x = np.array(x[:len(y)])
+            x = np.array(x[: len(y)])
             if len(value) == 3:
-                y_err = np.array(y_err[:len(y)])
+                y_err = np.array(y_err[: len(y)])
         else:
             y = np.array(y)
             x = np.array(x)
@@ -60,21 +73,21 @@ def plot_step_line_graph(
         plt.ylabel(y_label)
 
         # mid and post are also options but pre is used as energy bins start from 0
-        plt.step(x, y, where='pre', label=key)
+        plt.step(x, y, where="pre", label=key)
 
         plt.yscale(y_scale)
         plt.xscale(x_scale)
 
         if len(value) == 3:
-            lower_y = y-y_err
-            upper_y = y+y_err
-            plt.fill_between(x, lower_y, upper_y, step='pre', color='k', alpha=0.15)
+            lower_y = y - y_err
+            upper_y = y + y_err
+            plt.fill_between(x, lower_y, upper_y, step="pre", color="k", alpha=0.15)
 
     if legend:
         plt.legend()
     plt.title(title)
     if filename:
-        plt.savefig(filename, bbox_inches='tight', dpi=400)
+        plt.savefig(filename, bbox_inches="tight", dpi=400)
 
     plt.close()
 

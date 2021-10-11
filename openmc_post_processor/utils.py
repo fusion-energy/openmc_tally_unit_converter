@@ -1,4 +1,3 @@
-
 import openmc
 
 
@@ -27,21 +26,23 @@ def find_fusion_energy_per_reaction(reactants: str) -> float:
             0.5 * (fusion_energy_of_trition_ev + fusion_energy_of_proton_ev)
         ) + (0.5 * (fusion_energy_of_he3_ev + fusion_energy_of_neutron_ev))
     else:
-        raise ValueError(
-            "Only fuel types of DD and DT are currently supported")
+        raise ValueError("Only fuel types of DD and DT are currently supported")
 
     fusion_energy_per_reaction_j = fusion_energy_per_reaction_ev * 1.602176487e-19
 
     return fusion_energy_per_reaction_j
 
+
 def find_source_strength(
-    fusion_energy_per_second_or_per_pulse=None,
-    reactants='DT'
+    fusion_energy_per_second_or_per_pulse=None, reactants="DT"
 ) -> float:
 
     fusion_energy_per_reaction_j = find_fusion_energy_per_reaction(reactants)
-    number_of_neutrons = fusion_energy_per_second_or_per_pulse / fusion_energy_per_reaction_j
+    number_of_neutrons = (
+        fusion_energy_per_second_or_per_pulse / fusion_energy_per_reaction_j
+    )
     return number_of_neutrons
+
 
 def get_particles_from_tally_filters(tally, ureg):
     particles = []
@@ -50,23 +51,24 @@ def get_particles_from_tally_filters(tally, ureg):
             # assumes particle filters bin is a list of 1
             particles.append(filter.bins[0])
     if len(particles) == 0:
-        particles=['particle']
+        particles = ["particle"]
     print(particles)
-    units_string = ' * '.join(set(particles))
+    units_string = " * ".join(set(particles))
     return ureg(units_string)
+
 
 def get_cell_ids_from_tally_filters(tally):
     cell_ids = []
     for filter in tally.filters:
         if isinstance(filter, openmc.filter.CellFilter):
             cell_ids.append(filter.bins)
-    return cell_ids    
+    return cell_ids
+
 
 def get_tally_units(tally, ureg):
-    """
-    """
+    """ """
 
-    if tally.scores == ['flux']:
+    if tally.scores == ["flux"]:
         # tally has units of particle-cm2 per simulated_particle
         # https://openmc.discourse.group/t/normalizing-tally-to-get-flux-value/99/4
         units = get_particles_from_tally_filters(tally, ureg)
@@ -83,20 +85,23 @@ def get_tally_units(tally, ureg):
                 # dose on a volume uses a flux score (units of cm2 per simulated particle) and therefore gives pSv cm**4 / simulated particle
                 units = [ureg.picosievert * ureg.centimeter * units[0]]
 
-    elif tally.scores == ['heating']:
+    elif tally.scores == ["heating"]:
         # heating units are eV / simulated_particle
         units = [ureg.electron_volt / ureg.simulated_particle]
 
     else:
-        raise ValueError("units for tally can't be found, supported tallies are currently limited")
+        raise ValueError(
+            "units for tally can't be found, supported tallies are currently limited"
+        )
 
     return units
+
 
 def check_for_dimentionality_difference(units_1, units_2, unit_to_compare):
     units_1_time_power = units_1.dimensionality.get(unit_to_compare)
     units_2_time_power = units_2.dimensionality.get(unit_to_compare)
-    print('unit_1', units_1.dimensionality)
-    print('unit_2', units_2.dimensionality)
+    print("unit_1", units_1.dimensionality)
+    print("unit_2", units_2.dimensionality)
     return units_1_time_power - units_2_time_power
 
 

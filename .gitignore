@@ -134,3 +134,4 @@ dmypy.json
 *.out
 *.stl
 *.xml
+*.vscode/

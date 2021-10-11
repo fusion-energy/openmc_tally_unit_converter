@@ -1,4 +1,3 @@
-
 # This minimal example makes a 3D volume and exports the shape to a stp file
 # A surrounding volume called a graveyard is needed for neutronics simulations
 
@@ -9,16 +8,11 @@ import paramak
 from stl_to_h5m import stl_to_h5m
 
 my_shape = paramak.ExtrudeStraightShape(
-    points=[
-        (1, 1),
-        (1, 200),
-        (600, 200),
-        (600, 1)
-        ],
+    points=[(1, 1), (1, 200), (600, 200), (600, 1)],
     distance=180,
 )
 
-my_shape.export_stl('steel.stl')
+my_shape.export_stl("steel.stl")
 
 # This script converts the CAD stl files generated into h5m files that can be
 # used in DAGMC enabled codes. h5m files created in this way are imprinted,
@@ -26,8 +20,8 @@ my_shape.export_stl('steel.stl')
 # is the assignment of materials to the volumes present in the CAD files.
 
 stl_to_h5m(
-    files_with_tags=[('steel.stl', 'mat1')],
-    h5m_filename='dagmc.h5m',
+    files_with_tags=[("steel.stl", "mat1")],
+    h5m_filename="dagmc.h5m",
 )
 
 # makes use of the previously created neutronics geometry (h5m file) and assigns
@@ -35,12 +29,11 @@ stl_to_h5m(
 # the neutronics results to record (know as tallies).
 
 geometry = odw.Geometry(
-    h5m_filename='dagmc.h5m',
+    h5m_filename="dagmc.h5m",
 )
 
 materials = odw.Materials(
-    h5m_filename='dagmc.h5m',
-    correspondence_dict={"mat1": "eurofer"}
+    h5m_filename="dagmc.h5m", correspondence_dict={"mat1": "eurofer"}
 )
 
 tally1 = odw.CellTally(
@@ -98,7 +91,21 @@ tally11 = odw.CellTally(
     target=1,
 )
 
-tallies = openmc.Tallies([tally1, tally2, tally3, tally4, tally5, tally6, tally7, tally8, tally9, tally10, tally11])
+tallies = openmc.Tallies(
+    [
+        tally1,
+        tally2,
+        tally3,
+        tally4,
+        tally5,
+        tally6,
+        tally7,
+        tally8,
+        tally9,
+        tally10,
+        tally11,
+    ]
+)
 
 settings = odw.FusionSettings()
 settings.batches = 2
