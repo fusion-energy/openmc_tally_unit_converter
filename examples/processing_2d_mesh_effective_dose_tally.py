@@ -25,10 +25,16 @@ result = statepoint.process_tally(
 )
 opp.plot_2d_mesh_tally(result, "scaled_per_pulse_image.png")
 
+
 result = statepoint.process_tally(
     source_strength=1.3e6,
     tally=my_tally,
-    volume=100,  # TODO find a method for getting mesh volume automatically
-    required_units="sievert / cm / pulse",
+    # volume=100,  # TODO find a method for getting mesh volume automatically
+    required_units="picosievert / cm / pulse",
 )
-opp.plot_2d_mesh_tally(result, "scaled_per_pulse_per_volume_image.png")
+opp.plot_2d_mesh_tally(
+    values=result,
+    filename="scaled_per_pulse_per_volume_image.png",
+    vmin=1e6,
+    label="picosievert / cm / pulse"
+)

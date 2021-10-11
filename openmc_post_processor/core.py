@@ -4,7 +4,7 @@ import numpy as np
 import openmc
 import pint
 
-from openmc_post_processor import get_tally_units, check_for_dimentionality_difference
+from openmc_post_processor import get_tally_units, check_for_dimentionality_difference, compute_volume_of_voxels
 
 ureg = pint.UnitRegistry()
 ureg.load_definitions(str(Path(__file__).parent / "neutronics_units.txt"))
@@ -54,6 +54,7 @@ class StatePoint(openmc.StatePoint):
 
             if required_units:
                 tally_result = self.scale_tally(
+                    tally,
                     tally_result,
                     base_units[0],
                     ureg[required_units],
@@ -75,6 +76,7 @@ class StatePoint(openmc.StatePoint):
 
             if required_units:
                 scaled_tally_result = self.scale_tally(
+                    tally,
                     tally_base,
                     base_units[1],
                     ureg[required_units[1]],
@@ -99,7 +101,7 @@ class StatePoint(openmc.StatePoint):
         return converted_units
 
     def scale_tally(
-        self, tally_result, base_units, required_units, ureg, source_strength, volume
+        self, tally, tally_result, base_units, required_units, ureg, source_strength, volume
     ):
         time_diff = check_for_dimentionality_difference(
             base_units, required_units, "[time]"
@@ -140,11 +142,13 @@ class StatePoint(openmc.StatePoint):
             print("length scaling needed")
             if volume:
                 volume = volume * ureg["1 / centimeter ** 3"]
-                if length_diff == -3:
-                    tally_result = tally_result / volume
-                if length_diff == 3:
-                    tally_result = tally_result * volume
             else:
-                raise ValueError(f"volume is required but currently set to {volume}")
+                # volume required but not provided so it is found from the mesh
+                volume = compute_volume_of_voxels(tally, ureg)
+            
+            if length_diff == -3:
+                tally_result = tally_result / volume
+            if length_diff == 3:
+                tally_result = tally_result * volume
 
         return tally_result

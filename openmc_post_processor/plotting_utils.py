@@ -3,19 +3,24 @@ from typing import Iterable, Optional, Dict
 import matplotlib.pyplot as plt
 import numpy as np
 from numpy.lib.function_base import trim_zeros
+from matplotlib.colors import LogNorm
 
 
 def plot_2d_mesh_tally(
     values: np.ndarray,
     filename: Optional[str] = None,
+    scale=None,#LogNorm(),
+    vmin=None,
+    label=''
 ):
 
     fig = plt.subplot()
-    image_map = fig.imshow(values).get_figure()
+    image_map = fig.imshow(values, norm=scale, vmin = vmin)
+    plt.colorbar(image_map, label=label)
     if filename:
-        image_map.savefig(filename, dpi=300)
+        plt.savefig(filename, dpi=300)
     fig.clear()
-
+    plt.close()
     return fig
 
 
