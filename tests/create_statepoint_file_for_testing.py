@@ -125,6 +125,12 @@ tally14 = odw.MeshTally2D(
     bounding_box=[(-100, -100, 0), (100, 100, 1)],
 )
 
+tally15 = odw.MeshTally3D(
+    mesh_resolution=(100, 100, 100),
+    bounding_box=[(-100, -100, 0), (100, 100, 1)],
+    tally_type="neutron_effective_dose",
+)
+
 tallies = openmc.Tallies(
     [
         tally1,
@@ -141,6 +147,7 @@ tallies = openmc.Tallies(
         tally12,
         tally13,
         tally14,
+        tally15,
     ]
 )
 
