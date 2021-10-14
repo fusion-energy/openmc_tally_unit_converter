@@ -1,5 +1,5 @@
 import openmc_post_processor as opp
-import matplotlib.pyplot as plt
+from matplotlib.colors import LogNorm
 
 # loads in the statepoint file containing tallies
 statepoint = opp.StatePoint(filepath="statepoint.2.h5")
@@ -29,12 +29,13 @@ opp.plot_2d_mesh_tally(result, "scaled_per_pulse_image.png")
 result = statepoint.process_tally(
     source_strength=1.3e6,
     tally=my_tally,
-    # volume=100,  # TODO find a method for getting mesh volume automatically
     required_units="picosievert / cm / pulse",
 )
+
 opp.plot_2d_mesh_tally(
     values=result,
     filename="scaled_per_pulse_per_volume_image.png",
     vmin=1e6,
-    label="picosievert / cm / pulse"
+    label="picosievert / cm / pulse",
+    scale= LogNorm()
 )
