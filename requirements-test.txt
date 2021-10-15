@@ -1,2 +1,5 @@
-
+openmc_data_downloader
+openmc_dagmc_wrapper
+openmc_plasma_source
+# paramak
 pytest-cov>=2.12.1
