@@ -9,7 +9,7 @@ class TestUsage(unittest.TestCase):
 
         # loads in the statepoint file containing tallies
         statepoint = opp.StatePoint(filepath="statepoint.2.h5")
-        self.my_tally = statepoint.get_tally(name="1_neutron_effective_dose")
+        self.my_tally = statepoint.get_tally(name="2_neutron_effective_dose")
         self.statepoint = statepoint
 
     def test_cell_tally_dose_no_processing(self):
