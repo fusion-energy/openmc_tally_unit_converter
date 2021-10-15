@@ -1,10 +1,11 @@
 import openmc_post_processor as opp
+from spectrum_plotter import plot_spectrum  # a convenient plotting package
 
 # loads in the statepoint file containing tallies
 statepoint = opp.StatePoint(filepath="statepoint.2.h5")
 
 # gets one tally from the available tallies
-my_tally = statepoint.get_tally(name="1_neutron_spectra")
+my_tally = statepoint.get_tally(name="2_neutron_spectra")
 
 
 # returns the tally with base units
@@ -29,12 +30,12 @@ result = statepoint.process_tally(
 print(f"spectra per pulse = {result}", end="\n\n")
 
 # plots a graph of the results
-opp.plot_step_line_graph(
+plot_spectrum(
+    spectrum={"legend": (result[0], result[1])},
     x_label="Energy [MeV]",
     y_label="neutron flux [centimeter / second]",
     x_scale="log",
     y_scale="log",
-    values={"legend": (result[0], result[1])},
     # trim_zeros=False,
     filename="step_line_graph.png",
 )
