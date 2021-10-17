@@ -1,5 +1,5 @@
 import openmc_post_processor as opp
-from regular_mesh_plotter import plot_mesh_values, plot_stl_slice, plot_mesh_tally
+from regular_mesh_plotter import plot_mesh, plot_stl_slice, plot_mesh_tally
 from matplotlib.colors import LogNorm
 
 # loads in the statepoint file containing tallies
@@ -43,7 +43,7 @@ stl_slice = plot_stl_slice(
 )
 
 
-plot_mesh_values(
+plot_mesh(
     # extent=[-200,200, -200,200],
     values= result,
     scale=None,  # LogNorm(),
