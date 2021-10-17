@@ -9,7 +9,7 @@ class TestUsage(unittest.TestCase):
 
         # loads in the statepoint file containing tallies
         statepoint = opp.StatePoint(filepath="statepoint.2.h5")
-        self.my_tally = statepoint.get_tally(name="1_flux")
+        self.my_tally = statepoint.get_tally(name="2_flux")
         self.statepoint = statepoint
 
     # todo make test for find_source_strength

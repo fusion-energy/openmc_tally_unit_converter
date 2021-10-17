@@ -9,7 +9,7 @@ class TestUsage(unittest.TestCase):
 
         # loads in the statepoint file containing tallies
         statepoint = opp.StatePoint(filepath="statepoint.2.h5")
-        self.my_tally = statepoint.get_tally(name="1_heating")
+        self.my_tally = statepoint.get_tally(name="2_heating")
         self.statepoint = statepoint
 
     def test_cell_tally_heating_no_processing(self):
