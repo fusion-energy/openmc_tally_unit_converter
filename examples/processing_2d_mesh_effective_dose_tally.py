@@ -1,5 +1,5 @@
 import openmc_post_processor as opp
-from regular_mesh_plotter import plot_mesh, plot_stl_slice
+from regular_mesh_plotter import plot_mesh_values, plot_stl_slice, plot_mesh_tally
 from matplotlib.colors import LogNorm
 
 # loads in the statepoint file containing tallies
@@ -42,27 +42,19 @@ stl_slice = plot_stl_slice(
     filename='slice.png'
 )
 
-mesh = my_tally.filters[2]
-mesh.mesh.lower_left
-mesh.mesh.upper_right
 
-plot_mesh(
-    extent=[-200,200, -200,200],
+plot_mesh_values(
+    # extent=[-200,200, -200,200],
     values= result,
     scale=None,  # LogNorm(),
     vmin=None,
-    label="",
+    label="picosievert / cm / pulse",
     base_plt=stl_slice,
     filename= 'test.png',
+#     vmin=1e6,
 )
 
-# opp.plot_2d_mesh_tally(
-#     values=result,
-#     filename="scaled_per_pulse_per_volume_image.png",
-#     vmin=1e6,
-#     label="picosievert / cm / pulse",
-#     scale= LogNorm()
-# )
+mesh_filter = plot_mesh_tally(my_tally)
 
-print(result)
-print(result.shape)
+# print(result)
+# print(result.shape)
