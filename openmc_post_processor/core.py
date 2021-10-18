@@ -4,7 +4,7 @@ import numpy as np
 import openmc
 import pint
 
-from openmc_post_processor import get_tally_units, check_for_dimentionality_difference
+from openmc_post_processor import get_tally_units, check_for_dimentionality_difference, compute_volume_of_voxels
 
 ureg = pint.UnitRegistry()
 ureg.load_definitions(str(Path(__file__).parent / "neutronics_units.txt"))
@@ -20,7 +20,6 @@ class StatePoint(openmc.StatePoint):
         self,
         tally,
         required_units=None,
-        base_units=None,
         source_strength=None,
         volume=None,
     ):
@@ -35,9 +34,8 @@ class StatePoint(openmc.StatePoint):
         data_frame = tally.get_pandas_dataframe()
 
         # checks for user provided base units
-        if not base_units:
-            base_units = get_tally_units(tally, ureg)
-            print(f"tally {tally.name} base units {base_units}")
+        base_units = get_tally_units(tally, ureg)
+        print(f"tally {tally.name} base units {base_units}")
 
         # there might be more than one based unit entry if spectra has been tallied
         if len(base_units) == 1:
@@ -45,23 +43,18 @@ class StatePoint(openmc.StatePoint):
                 # just a single number in the tally result
                 tally_result = data_frame["mean"].sum() * base_units[0]
             else:
-                print("found mesh tally")
                 # more than one number, a mesh tally
-                # my_slice = tally.get_slice(scores=tally.scores)
                 tally_filter = tally.find_filter(filter_type=openmc.MeshFilter)
                 shape = tally_filter.mesh.dimension.tolist()
                 if 1 in shape:
                     # 2d mesh
                     shape.remove(1)
-                # my_slice.mean.shape = shape
-                # tally_result = my_slice.mean * base_units[0]
                 tally_result = np.array(data_frame["mean"]) * base_units[0]
                 tally_result = tally_result.reshape(shape)
 
             if required_units:
-                print(f"tally {tally.name} required units {ureg[required_units]}")
-                # base_units, required_units, ureg
                 tally_result = self.scale_tally(
+                    tally,
                     tally_result,
                     base_units[0],
                     ureg[required_units],
@@ -69,7 +62,7 @@ class StatePoint(openmc.StatePoint):
                     source_strength,
                     volume,
                 )
-                tally_result = self.convert_unit(tally_result, required_units)
+                tally_result = self.convert_units([tally_result], [required_units])[0]
         else:
 
             tally_result = []
@@ -83,6 +76,7 @@ class StatePoint(openmc.StatePoint):
 
             if required_units:
                 scaled_tally_result = self.scale_tally(
+                    tally,
                     tally_base,
                     base_units[1],
                     ureg[required_units[1]],
@@ -99,21 +93,15 @@ class StatePoint(openmc.StatePoint):
 
         return tally_result
 
-    def convert_unit(self, value_to_convert, required_units):
-
-        value_to_convert = value_to_convert.to(required_units)
-
-        return value_to_convert
-
     def convert_units(self, value_to_convert, required_units):
+        converted_units = []
+        for value, required in zip(value_to_convert, required_units):
+            converted_units.append(value.to(required))
 
-        value_to_convert[1] = value_to_convert[1].to(required_units[1])
-        value_to_convert[0] = value_to_convert[0].to(required_units[0])
-
-        return value_to_convert
+        return converted_units
 
     def scale_tally(
-        self, tally_result, base_units, required_units, ureg, source_strength, volume
+        self, tally, tally_result, base_units, required_units, ureg, source_strength, volume
     ):
         time_diff = check_for_dimentionality_difference(
             base_units, required_units, "[time]"
@@ -154,11 +142,13 @@ class StatePoint(openmc.StatePoint):
             print("length scaling needed")
             if volume:
                 volume = volume * ureg["1 / centimeter ** 3"]
-                if length_diff == -3:
-                    tally_result = tally_result / volume
-                if length_diff == 3:
-                    tally_result = tally_result * volume
             else:
-                raise ValueError(f"volume is required but currently set to {volume}")
+                # volume required but not provided so it is found from the mesh
+                volume = compute_volume_of_voxels(tally, ureg)
+            
+            if length_diff == -3:
+                tally_result = tally_result / volume
+            if length_diff == 3:
+                tally_result = tally_result * volume
 
         return tally_result

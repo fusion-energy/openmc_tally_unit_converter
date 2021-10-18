@@ -4,16 +4,14 @@ import openmc_post_processor as opp
 statepoint = opp.StatePoint(filepath="statepoint.2.h5")
 
 # gets one tally from the available tallies
-my_tally = statepoint.get_tally(name="1_flux")
+my_tally = statepoint.get_tally(name="2_flux")
 
 print("default openmc tally result in base units", my_tally, end="\n\n")
 
 print(opp.find_source_strength(fusion_energy_per_second_or_per_pulse=1.3e6))
 
 # returns the tally with base units
-result = statepoint.process_tally(
-    tally=my_tally,
-)
+result = statepoint.process_tally(tally=my_tally)
 print(f"flux base units = {result}", end="\n\n")
 
 
@@ -51,7 +49,6 @@ print(f"flux per pulse = {result}", end="\n\n")
 
 # returns the tally with normalisation for volume
 result = statepoint.process_tally(
-    # source_strength=1e9,
     volume=100,
     tally=my_tally,
     required_units="1 / centimeter ** 2",

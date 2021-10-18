@@ -1,0 +1,44 @@
+# This CI will lauch a Docker image that contains all the dependencies required
+# within that image the pytest test suite is run 
+
+name: CI with install
+
+on:
+  pull_request:
+    branches:
+      - develop
+      - main
+    paths-ignore:
+      - 'docs/**'
+      - '.gitignore'
+      - '*.md'
+      - 'CITATION.cff'
+      - 'LICENSE.txt'
+      - 'readthedocs.yml'
+
+jobs:
+  testing:
+    runs-on: ubuntu-latest
+    container:
+      image: continuumio/miniconda3:4.9.2
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: install package
+        run: |
+          conda install -c conda-forge openmc
+          # conda install -c cadquery -c conda-forge cadquery=2.1
+          python setup.py install
+
+      - name: install packages for tests
+        run: |
+          pip install -r requirements-test.txt 
+
+      - name: Run test_utils
+        run: |
+          python tests/create_statepoint_file_for_testing.py
+          pytest tests/ -v --cov=openmc_post_processor --cov-append --cov-report term --cov-report xml
+
+      - name: Upload to codecov
+        uses: codecov/codecov-action@v2

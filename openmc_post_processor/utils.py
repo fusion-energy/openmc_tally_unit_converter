@@ -1,6 +1,18 @@
 import openmc
 
 
+def compute_volume_of_voxels(tally, ureg):
+    tally_filter = tally.find_filter(filter_type=openmc.MeshFilter)
+    if tally_filter:
+        mesh = tally_filter.mesh
+        x = abs(mesh.lower_left[0] - mesh.upper_right[0])/mesh.dimension[0]
+        y = abs(mesh.lower_left[1] - mesh.upper_right[1])/mesh.dimension[1]
+        z = abs(mesh.lower_left[2] - mesh.upper_right[2])/mesh.dimension[2]
+        volume = x*y*z
+        return volume * ureg["1 / centimeter ** 3"]
+    else:
+        raise ValueError(f"volume could not be obtained from tally {tally}")
+
 def find_fusion_energy_per_reaction(reactants: str) -> float:
     """Finds the average fusion energy produced per fusion reaction in joules
     from the fuel type.
@@ -52,7 +64,6 @@ def get_particles_from_tally_filters(tally, ureg):
             particles.append(filter.bins[0])
     if len(particles) == 0:
         particles = ["particle"]
-    print(particles)
     units_string = " * ".join(set(particles))
     return ureg(units_string)
 
@@ -100,12 +111,9 @@ def get_tally_units(tally, ureg):
 def check_for_dimentionality_difference(units_1, units_2, unit_to_compare):
     units_1_time_power = units_1.dimensionality.get(unit_to_compare)
     units_2_time_power = units_2.dimensionality.get(unit_to_compare)
-    print("unit_1", units_1.dimensionality)
-    print("unit_2", units_2.dimensionality)
     return units_1_time_power - units_2_time_power
 
 
 # import pint
 # ureg = pint.UnitRegistry()
-# diff = check_for_dimentionality_difference_for_time(ureg['cm**2 / s'],ureg['m * s**2'])
-# print(diff)
+# diff = check_for_dimentionality_difference_for_time(ureg['cm**2 / s'],ureg['m * s**2']

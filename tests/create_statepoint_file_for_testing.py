@@ -56,47 +56,47 @@ geometry = openmc.Geometry(universe)
 
 tally1 = odw.CellTally(
     tally_type="flux",
-    target=1,
+    target=2,
 )
 
 tally2 = odw.CellTally(
     tally_type="neutron_spectra",
-    target=1,
+    target=2,
 )
 
 tally3 = odw.CellTally(
     tally_type="TBR",
-    target=1,
+    target=2,
 )
 
 tally4 = odw.CellTally(
     tally_type="heating",
-    target=1,
+    target=2,
 )
 
 tally5 = odw.CellTally(
     tally_type="neutron_effective_dose",
-    target=1,
+    target=2,
 )
 
 tally6 = odw.CellTally(
     tally_type="photon_effective_dose",
-    target=1,
+    target=2,
 )
 
 tally7 = odw.CellTally(
     tally_type="neutron_fast_flux",
-    target=1,
+    target=2,
 )
 
 tally8 = odw.CellTally(
     tally_type="photon_fast_flux",
-    target=1,
+    target=2,
 )
 
 tally9 = odw.CellTally(
     tally_type="neutron_spectra",
-    target=1,
+    target=2,
 )
 
 tally10 = odw.CellTally(
@@ -111,18 +111,25 @@ tally11 = odw.CellTally(
 
 tally12 = odw.CellTally(
     tally_type="photon_spectra",
-    target=1,
+    target=2,
 )
 
 tally13 = odw.CellTally(
     tally_type="(n,total)",
-    target=1,
+    target=2,
 )
 
 tally14 = odw.MeshTally2D(
     tally_type="neutron_effective_dose",
     plane="xy",
+    mesh_resolution=(10, 5),
     bounding_box=[(-100, -100, 0), (100, 100, 1)],
+)
+
+tally15 = odw.MeshTally3D(
+    mesh_resolution=(100, 100, 100),
+    bounding_box=[(-100, -100, 0), (100, 100, 1)],
+    tally_type="neutron_effective_dose",
 )
 
 tallies = openmc.Tallies(
@@ -141,12 +148,13 @@ tallies = openmc.Tallies(
         tally12,
         tally13,
         tally14,
+        tally15,
     ]
 )
 
 settings = odw.FusionSettings()
 settings.batches = 2
-settings.particles = 1000
+settings.particles = 1000000
 # assigns a ring source of DT energy neutrons to the source using the
 # openmc_plasma_source package
 settings.source = ops.FusionPointSource()
