@@ -99,13 +99,14 @@ def get_tally_units(tally, ureg):
     elif tally.scores == ["heating"]:
         # heating units are eV / simulated_particle
         units = [ureg.electron_volt / ureg.simulated_particle]
+    return  [1 / ureg.simulated_particle]
 
-    else:
-        raise ValueError(
-            "units for tally can't be found, supported tallies are currently limited"
-        )
+    # else:
+        # raise ValueError(
+        #     "units for tally can't be found, supported tallies are currently limited"
+        # )
 
-    return units
+    # return units
 
 
 def check_for_dimentionality_difference(units_1, units_2, unit_to_compare):
