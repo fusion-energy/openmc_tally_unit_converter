@@ -27,11 +27,10 @@ def process_spectra_tally(
     base_units = get_tally_units(tally)
     print(f"tally {tally.name} base units {base_units}")
 
-    tally_result = []
     for filter in tally.filters:
         if isinstance(filter, openmc.filter.EnergyFilter):
             energy_base = filter.values * base_units[0]
-            # skip other filters and contine ?
+            # skip other filters and contine or error if not found?
 
     # numpy array is needed as a pandas series can't have units
     tally_base = np.array(data_frame["mean"]) * base_units[1]
@@ -148,33 +147,6 @@ def process_tally(
                 volume,
             )
             tally_result = convert_units([tally_result], [required_units])[0]
-    else:
-
-        tally_result = []
-        for filter in tally.filters:
-            if isinstance(filter, openmc.filter.EnergyFilter):
-                energy_base = filter.values * base_units[0]
-                # skip other filters and contine ?
-
-        # numpy array is needed as a pandas series can't have units
-        tally_base = np.array(data_frame["mean"]) * base_units[1]
-
-        if required_units:
-            scaled_tally_result = scale_tally(
-                tally,
-                tally_base,
-                base_units[1],
-                ureg[required_units[1]],
-                ureg,
-                source_strength,
-                volume,
-            )
-            tally_results = convert_units(
-                [energy_base, scaled_tally_result], required_units
-            )
-            return tally_results
-        else:
-            return [energy_base, tally_base]
 
     return tally_result
 
