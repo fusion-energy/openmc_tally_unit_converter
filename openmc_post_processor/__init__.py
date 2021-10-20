@@ -3,6 +3,8 @@ from .utils import (
     get_tally_units,
     check_for_dimentionality_difference,
     find_source_strength,
-    compute_volume_of_voxels
+    compute_volume_of_voxels,
+    process_tally,
+    convert_units,
+    scale_tally
 )
-from .core import StatePoint
