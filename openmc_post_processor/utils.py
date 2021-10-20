@@ -41,7 +41,6 @@ def process_spectra_tally(
             tally_base,
             base_units[1],
             ureg[required_units[1]],
-            ureg,
             source_strength,
             volume,
         )
@@ -92,7 +91,6 @@ def process_dose_tally(
             tally_result,
             base_units[0],
             ureg[required_units],
-            ureg,
             source_strength,
             volume,
         )
@@ -142,7 +140,6 @@ def process_tally(
                 tally_result,
                 base_units[0],
                 ureg[required_units],
-                ureg,
                 source_strength,
                 volume,
             )
@@ -158,7 +155,7 @@ def convert_units(value_to_convert, required_units):
     return converted_units
 
 def scale_tally(
-    tally, tally_result, base_units, required_units, ureg, source_strength, volume
+    tally, tally_result, base_units, required_units, source_strength, volume
 ):
     time_diff = check_for_dimentionality_difference(
         base_units, required_units, "[time]"
