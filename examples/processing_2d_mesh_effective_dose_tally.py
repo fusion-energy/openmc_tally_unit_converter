@@ -8,7 +8,7 @@ my_tally = statepoint.get_tally(name="neutron_effective_dose_on_2D_mesh_xy")
 
 
 # returns the tally with base units
-result = opp.process_tally(
+result = opp.process_dose_tally(
     tally=my_tally,
 )
 # the tally result with required units
@@ -16,29 +16,9 @@ print(result)
 
 
 # scaled from picosievert to sievert
-result = opp.process_tally(
+result = opp.process_dose_tally(
     tally=my_tally,
     required_units="sievert cm **2 / simulated_particle"
 )
 # the tally result with required units
 print(result)
-
-
-# scaled from picosievert to sievert and normalised per pulse of 1.3e6 neutrons
-# result = opp.process_tally(
-#     tally=my_tally,
-#     source_strength=1.3e6,
-#     required_units="sievert cm **2 / pulse"
-# )
-# # the tally result with required units
-# print(result)
-
-
-# # scaled by mesh voxel volume and normalised per pulse of 1.3e6 neutrons
-# result = statepoint.process_tally(
-#     tally=my_tally,
-#     source_strength=1.3e6,
-#     required_units="picosievert / cm / pulse",
-# )
-# # the tally result with required units
-# print(result)
