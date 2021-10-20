@@ -310,7 +310,7 @@ def get_tally_units(tally):
         units = [ureg.electron_volt / ureg.simulated_particle]
 
     else:
-        # return  [1 / ureg.simulated_particle]
+        return  [1 / ureg.simulated_particle]
         raise ValueError(
             "units for tally can't be found, supported tallies are currently limited"
         )
