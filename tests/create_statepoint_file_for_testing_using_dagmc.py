@@ -82,13 +82,36 @@ tally9 = odw.CellTally(
 )
 
 tally10 = odw.CellTally(
-    tally_type="photon_spectra",
+    tally_type="neutron_spectra",
     target=1,
 )
 
 tally11 = odw.CellTally(
+    tally_type="neutron_spectra",
+    target=3,
+)
+
+tally12 = odw.CellTally(
+    tally_type="photon_spectra",
+    target=1,
+)
+
+tally13 = odw.CellTally(
     tally_type="(n,total)",
     target=1,
+)
+
+tally14 = odw.MeshTally2D(
+    tally_type="neutron_effective_dose",
+    plane="xy",
+    mesh_resolution=(10, 5),
+    bounding_box=[(-100, -100, 0), (100, 100, 1)],
+)
+
+tally15 = odw.MeshTally3D(
+    mesh_resolution=(100, 100, 100),
+    bounding_box=[(-100, -100, 0), (100, 100, 1)],
+    tally_type="neutron_effective_dose",
 )
 
 tallies = openmc.Tallies(
@@ -104,12 +127,16 @@ tallies = openmc.Tallies(
         tally9,
         tally10,
         tally11,
+        tally12,
+        tally13,
+        tally14,
+        tally15,
     ]
 )
 
 settings = odw.FusionSettings()
-settings.batches = 2
-settings.particles = 1000
+settings.batches = 3
+settings.particles = 1000000
 # assigns a ring source of DT energy neutrons to the source using the
 # openmc_plasma_source package
 settings.source = ops.FusionPointSource()
