@@ -1,5 +1,7 @@
+import openmc
 import openmc_post_processor as opp
 from spectrum_plotter import plot_spectrum  # a convenient plotting package
+
 
 # loads in the statepoint file containing tallies
 statepoint = opp.StatePoint(filepath="statepoint.2.h5")
