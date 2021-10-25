@@ -198,7 +198,7 @@ def scale_tally(
             volume = volume * ureg["1 / centimeter ** 3"]
         else:
             # volume required but not provided so it is found from the mesh
-            volume = compute_volume_of_voxels(tally, ureg)
+            volume = compute_volume_of_voxels(tally) * ureg["1 / centimeter ** 3"]
         
         if length_diff == -3:
             tally_result = tally_result / volume
@@ -208,7 +208,7 @@ def scale_tally(
     return tally_result
 
 
-def compute_volume_of_voxels(tally, ureg):
+def compute_volume_of_voxels(tally):
     tally_filter = tally.find_filter(filter_type=openmc.MeshFilter)
     if tally_filter:
         mesh = tally_filter.mesh
@@ -216,7 +216,7 @@ def compute_volume_of_voxels(tally, ureg):
         y = abs(mesh.lower_left[1] - mesh.upper_right[1])/mesh.dimension[1]
         z = abs(mesh.lower_left[2] - mesh.upper_right[2])/mesh.dimension[2]
         volume = x*y*z
-        return volume * ureg["1 / centimeter ** 3"]
+        return volume
     else:
         raise ValueError(f"volume could not be obtained from tally {tally}")
 
@@ -322,8 +322,3 @@ def check_for_dimentionality_difference(units_1, units_2, unit_to_compare):
     units_1_time_power = units_1.dimensionality.get(unit_to_compare)
     units_2_time_power = units_2.dimensionality.get(unit_to_compare)
     return units_1_time_power - units_2_time_power
-
-
-# import pint
-# ureg = pint.UnitRegistry()
-# diff = check_for_dimentionality_difference_for_time(ureg['cm**2 / s'],ureg['m * s**2']
