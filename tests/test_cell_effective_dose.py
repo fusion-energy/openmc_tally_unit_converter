@@ -13,7 +13,7 @@ class TestUsage(unittest.TestCase):
         self.my_tally = statepoint.get_tally(name="2_neutron_effective_dose")
 
     def test_tally_base_units(self):
-        base_units = opp.get_tally_units(self.my_tally)
+        base_units = opp.get_tally_units_dose(self.my_tally)
         assert base_units[0].units == "centimeter ** 2 * neutron * picosievert / simulated_particle"
 
     def test_cell_tally_dose_no_processing(self):
