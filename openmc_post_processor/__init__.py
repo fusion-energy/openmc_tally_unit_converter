@@ -9,6 +9,5 @@ from .utils import (
     process_tally,
     process_dose_tally,
     process_spectra_tally,
-    convert_units,
     scale_tally
 )

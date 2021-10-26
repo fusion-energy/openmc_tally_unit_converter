@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Tuple
 
 import numpy as np
 import openmc
@@ -10,17 +11,31 @@ ureg.load_definitions(str(Path(__file__).parent / "neutronics_units.txt"))
 
 def process_spectra_tally(
     tally,
-    required_units=None,
-    source_strength=None,
-    volume=None,
-):
+    required_units: Tuple[str, str] = None,
+    source_strength: float = None,
+    volume: float = None,
+) -> tuple:
     """Processes a spectra tally converting the tally with default units
-    obtained during simulation into the user specified units. In some cases
-    additional user inputs will be required such as volume or source strength."""
+    obtained during simulation into the user specified units.
 
-    # user makes use of openmc.StatePoint.get_tally to find tally
-    # passes the tally into this function along with the required units
-    # the tally can be returned with base units or with converted units
+    Args:
+        tally: The openmc.Tally object which should be a spectra tally. With a
+            score of flux or current and an EnergyFilter
+        required_units: A tuple of the units to convert the energy and tally into
+        source_strength: In some cases the source_strength will be required
+            to convert the base units into the required units. This optional
+            argument allows the user to specify the source_strength when needed
+        volume: In some cases the volume will be required to convert the base
+            units into the required units. In the case of a regular mesh the
+            volume is automatically found. This optional argument allows the
+            user to specify the volume when needed or overwrite the
+            automatically calculated volume.
+
+    Returns:
+        Tuple of spectra energies and tally results
+    """
+
+    check_for_unit_modifying_filters(tally)
 
     data_frame = tally.get_pandas_dataframe()
 
@@ -45,27 +60,39 @@ def process_spectra_tally(
             source_strength,
             volume,
         )
-        tally_results = convert_units(
-            [energy_base, scaled_tally_result], required_units
-        )
-        return tally_results
+        tally_in_required_units = scaled_tally_result.to(required_units[1])
+        energy_in_required_units = energy_base.to(required_units[0])
+
+        return energy_in_required_units, tally_in_required_units
     else:
-        return [energy_base, tally_base]
+        return energy_base, tally_base
 
 
 def process_dose_tally(
     tally,
-    required_units=None,
-    source_strength=None,
-    volume=None,
+    required_units: str = None,
+    source_strength: float = None,
+    volume: float = None,
 ):
-    """Processes the tally converting the tally with default units obtained
-    during simulation into the user specified units. In some cases
-    additional user inputs will be required. Units with"""
+    """Processes a dose tally converting the tally with default units
+    obtained during simulation into the user specified units.
 
-    # user makes use of StatePoint.get_tally to find tally
-    # passes the tally into this function along with the required units
-    # the tally can be returned with base units or with converted units
+    Args:
+        tally: The openmc.Tally object which should be a spectra tally. With a
+            score of flux or current and an EnergyFunctionFilter
+        required_units: The units to convert the energy and tally into
+        source_strength: In some cases the source_strength will be required
+            to convert the base units into the required units. This optional
+            argument allows the user to specify the source_strength when needed
+        volume: In some cases the volume will be required to convert the base
+            units into the required units. In the case of a regular mesh the
+            volume is automatically found. This optional argument allows the
+            user to specify the volume when needed or overwrite the
+            automatically calculated volume.
+
+    Returns:
+        The dose tally result in the required units
+    """
 
     data_frame = tally.get_pandas_dataframe()
 
@@ -87,7 +114,7 @@ def process_dose_tally(
         tally_result = tally_result.reshape(shape)
 
     if required_units:
-        tally_result = scale_tally(
+        scaled_tally_result = scale_tally(
             tally,
             tally_result,
             base_units[0],
@@ -95,25 +122,36 @@ def process_dose_tally(
             source_strength,
             volume,
         )
-        tally_result = convert_units([tally_result], [required_units])[0]
+        tally_in_required_units = scaled_tally_result.to(required_units)
+        return tally_in_required_units
 
     return tally_result
 
 
 def process_tally(
     tally,
-    required_units=None,
-    source_strength=None,
-    volume=None,
+    required_units: str = None,
+    source_strength: float = None,
+    volume: float = None,
 ):
-    """Processes the tally converting the tally with default units obtained
-    during simulation into the user specified units. In some cases
-    additional user inputs will be required. Units with"""
+    """Processes a tally converting the tally with default units obtained
+     during simulation into the user specified units.
 
-    # user makes use of StatePoint.get_tally to find tally
-    # passes the tally into this function along with the required units
-    # the tally can be returned with base units or with converted units
+    Args:
+        tally: The openmc.Tally object to convert the units of
+        required_units: The units to convert the energy and tally into
+        source_strength: In some cases the source_strength will be required
+            to convert the base units into the required units. This optional
+            argument allows the user to specify the source_strength when needed
+        volume: In some cases the volume will be required to convert the base
+            units into the required units. In the case of a regular mesh the
+            volume is automatically found. This optional argument allows the
+            user to specify the volume when needed or overwrite the
+            automatically calculated volume.
 
+    Returns:
+        The dose tally result in the required units
+    """
     data_frame = tally.get_pandas_dataframe()
 
     check_for_unit_modifying_filters(tally)
@@ -138,7 +176,7 @@ def process_tally(
             tally_result = tally_result.reshape(shape)
 
         if required_units:
-            tally_result = scale_tally(
+            scaled_tally_result = scale_tally(
                 tally,
                 tally_result,
                 base_units[0],
@@ -146,26 +184,14 @@ def process_tally(
                 source_strength,
                 volume,
             )
-            tally_result = convert_units([tally_result], [required_units])[0]
+            tally_in_required_units = scaled_tally_result.to(required_units)
+            return tally_in_required_units
 
     return tally_result
 
 
-def convert_units(value_to_convert, required_units):
-    converted_units = []
-    for value, required in zip(value_to_convert, required_units):
-        converted_units.append(value.to(required))
-
-    return converted_units
-
-
 def scale_tally(
-    tally,
-    tally_result,
-    base_units,
-    required_units,
-    source_strength,
-    volume
+    tally, tally_result, base_units, required_units, source_strength, volume
 ):
     time_diff = check_for_dimentionality_difference(
         base_units, required_units, "[time]"
@@ -222,10 +248,10 @@ def compute_volume_of_voxels(tally):
     tally_filter = tally.find_filter(filter_type=openmc.MeshFilter)
     if tally_filter:
         mesh = tally_filter.mesh
-        x = abs(mesh.lower_left[0] - mesh.upper_right[0])/mesh.dimension[0]
-        y = abs(mesh.lower_left[1] - mesh.upper_right[1])/mesh.dimension[1]
-        z = abs(mesh.lower_left[2] - mesh.upper_right[2])/mesh.dimension[2]
-        volume = x*y*z
+        x = abs(mesh.lower_left[0] - mesh.upper_right[0]) / mesh.dimension[0]
+        y = abs(mesh.lower_left[1] - mesh.upper_right[1]) / mesh.dimension[1]
+        z = abs(mesh.lower_left[2] - mesh.upper_right[2]) / mesh.dimension[2]
+        volume = x * y * z
         return volume
     else:
         raise ValueError(f"volume could not be obtained from tally {tally}")
@@ -318,7 +344,7 @@ def get_tally_units_dose(tally):
     # check it is a dose tally by looking for a openmc.filter.EnergyFunctionFilter
     for filter in tally.filters:
         if isinstance(filter, openmc.filter.EnergyFunctionFilter):
-            print('filter is EnergyFunctionFilter')
+            print("filter is EnergyFunctionFilter")
             # effective_dose
             # dose coefficients have pico sievert cm **2
             # flux has cm2 / simulated_particle units
@@ -331,30 +357,33 @@ def get_tally_units_dose(tally):
         "units for dose tally can't be found, an EnergyFunctionFilter was not present"
     )
 
+
 def check_for_unit_modifying_filters(tally):
     # check for EnergyFunctionFilter which modify the units of the tally
     for filter in tally.filters:
         if isinstance(filter, openmc.filter.EnergyFunctionFilter):
-            msg = ('An EnergyFunctionFilter was found in the tally. This '
-                   'modifies the tally units and the base units of the'
-                   'EnergyFunctionFilter are not known to OpenMC. Therefore '
-                   'the units of this tally can not be found. If you have '
-                   'applied dose coefficients to an EnergyFunctionFilter '
-                   'the units of these are known and yo can use the '
-                   'get_tally_units_dose function instead of the '
-                   'get_tally_units')
+            msg = (
+                "An EnergyFunctionFilter was found in the tally. This "
+                "modifies the tally units and the base units of the"
+                "EnergyFunctionFilter are not known to OpenMC. Therefore "
+                "the units of this tally can not be found. If you have "
+                "applied dose coefficients to an EnergyFunctionFilter "
+                "the units of these are known and yo can use the "
+                "get_tally_units_dose function instead of the "
+                "get_tally_units"
+            )
             raise ValueError(msg)
+
 
 def get_tally_units(tally):
     """ """
 
     if tally.scores == ["current"]:
         units = get_particles_from_tally_filters(tally, ureg)
-        units = [units / (ureg.simulated_particle * ureg.centimeter**2)]
-
+        units = [units / (ureg.simulated_particle * ureg.centimeter ** 2)]
 
     if tally.scores == ["flux"]:
-        print('score is flux')
+        print("score is flux")
         # tally has units of particle-cm2 per simulated_particle
         # https://openmc.discourse.group/t/normalizing-tally-to-get-flux-value/99/4
         units = get_particles_from_tally_filters(tally, ureg)
