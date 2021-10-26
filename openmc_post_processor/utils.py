@@ -7,14 +7,15 @@ import pint
 ureg = pint.UnitRegistry()
 ureg.load_definitions(str(Path(__file__).parent / "neutronics_units.txt"))
 
+
 def process_spectra_tally(
     tally,
     required_units=None,
     source_strength=None,
     volume=None,
 ):
-    """Processes a spectra tally converting the tally with default units obtained
-    during simulation into the user specified units. In some cases
+    """Processes a spectra tally converting the tally with default units
+    obtained during simulation into the user specified units. In some cases
     additional user inputs will be required such as volume or source strength."""
 
     # user makes use of openmc.StatePoint.get_tally to find tally
@@ -115,6 +116,8 @@ def process_tally(
 
     data_frame = tally.get_pandas_dataframe()
 
+    check_for_unit_modifying_filters(tally)
+
     # checks for user provided base units
     base_units = get_tally_units(tally)
     print(f"tally {tally.name} base units {base_units}")
@@ -147,6 +150,7 @@ def process_tally(
 
     return tally_result
 
+
 def convert_units(value_to_convert, required_units):
     converted_units = []
     for value, required in zip(value_to_convert, required_units):
@@ -154,8 +158,14 @@ def convert_units(value_to_convert, required_units):
 
     return converted_units
 
+
 def scale_tally(
-    tally, tally_result, base_units, required_units, source_strength, volume
+    tally,
+    tally_result,
+    base_units,
+    required_units,
+    source_strength,
+    volume
 ):
     time_diff = check_for_dimentionality_difference(
         base_units, required_units, "[time]"
@@ -199,7 +209,7 @@ def scale_tally(
         else:
             # volume required but not provided so it is found from the mesh
             volume = compute_volume_of_voxels(tally) * ureg["1 / centimeter ** 3"]
-        
+
         if length_diff == -3:
             tally_result = tally_result / volume
         if length_diff == 3:
@@ -296,14 +306,14 @@ def get_tally_units_spectra(tally):
             return units
 
     raise ValueError(
-        "units for spectra tally can't be found, an energy filter was not present"
+        "units for spectra tally can't be found, an EnergyFilter was not present"
     )
-    
+
 
 def get_tally_units_dose(tally):
 
     # An EnergyFunctionFilter is exspeted in dose tallies
-    units = get_tally_units(tally, allow_EnergyFunctionFilter=True)
+    units = get_tally_units(tally)
 
     # check it is a dose tally by looking for a openmc.filter.EnergyFunctionFilter
     for filter in tally.filters:
@@ -318,26 +328,25 @@ def get_tally_units_dose(tally):
             return units
 
     raise ValueError(
-        "units for spectra tally can't be found, an energy filter was not present"
+        "units for dose tally can't be found, an EnergyFunctionFilter was not present"
     )
 
-
-def get_tally_units(tally, allow_EnergyFunctionFilter=False):
-    """ """
-
+def check_for_unit_modifying_filters(tally):
     # check for EnergyFunctionFilter which modify the units of the tally
-    if allow_EnergyFunctionFilter is False:
-        for filter in tally.filters:
-            if isinstance(filter, openmc.filter.EnergyFunctionFilter):
-                msg = ('An EnergyFunctionFilter was found in the tally. This '
-                       'modifies the tally units and the base units of the'
-                       'EnergyFunctionFilter are not known to OpenMC. Therefore '
-                       'the units of this tally can not be found. If you have '
-                       'applied dose coefficients to an EnergyFunctionFilter '
-                       'the units of these are known and yo can use the '
-                       'get_tally_units_dose function instead of the '
-                       'get_tally_units')
-                raise ValueError(msg)
+    for filter in tally.filters:
+        if isinstance(filter, openmc.filter.EnergyFunctionFilter):
+            msg = ('An EnergyFunctionFilter was found in the tally. This '
+                   'modifies the tally units and the base units of the'
+                   'EnergyFunctionFilter are not known to OpenMC. Therefore '
+                   'the units of this tally can not be found. If you have '
+                   'applied dose coefficients to an EnergyFunctionFilter '
+                   'the units of these are known and yo can use the '
+                   'get_tally_units_dose function instead of the '
+                   'get_tally_units')
+            raise ValueError(msg)
+
+def get_tally_units(tally):
+    """ """
 
     if tally.scores == ["current"]:
         units = get_particles_from_tally_filters(tally, ureg)
