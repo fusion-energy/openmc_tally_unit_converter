@@ -7,20 +7,18 @@ statepoint = openmc.StatePoint(filepath="statepoint.2.h5")
 # gets one tally from the available tallies
 my_tally = statepoint.get_tally(name="2_flux")
 
-print("default openmc tally result in base units", my_tally, end="\n\n")
-
-print(opp.find_source_strength(fusion_energy_per_second_or_per_pulse=1.3e6))
+# print(opp.find_source_strength(fusion_energy_per_second_or_per_pulse=1.3e6))
 
 # returns the tally with base units
 result = opp.process_tally(tally=my_tally)
-print(f"flux base units = {result}", end="\n\n")
+print(f"flux base units = {result[0].units}", end="\n\n")
 
 
 # returns the tally with scalled based units (m instead of cm)
 result = opp.process_tally(
-    tally=my_tally, required_units="meter / simulated_particle"
+    tally=my_tally, required_units="centimeter * particle / simulated_particle"
 )
-print(f"flux scaled base units = {result}", end="\n\n")
+print(f"flux scaled base units = {result[0].units}", end="\n\n")
 
 
 # returns the tally with normalisation per pulse
