@@ -11,8 +11,8 @@ ureg.load_definitions(str(Path(__file__).parent / "neutronics_units.txt"))
 
 def process_spectra_tally(
     tally,
-    required_units: str = None,
-    required_energy_units: str = None,
+    required_units: str = "centimeters / simulated_particle",
+    required_energy_units: str = 'eV',
     source_strength: float = None,
     volume: float = None,
 ) -> tuple:
@@ -22,7 +22,8 @@ def process_spectra_tally(
     Args:
         tally: The openmc.Tally object which should be a spectra tally. With a
             score of flux or current and an EnergyFilter
-        required_units: A tuple of the units to convert the energy and tally into
+        required_units: A tuple of the units to convert the energy and tally
+            into
         source_strength: In some cases the source_strength will be required
             to convert the base units into the required units. This optional
             argument allows the user to specify the source_strength when needed
@@ -53,35 +54,35 @@ def process_spectra_tally(
     tally_std_dev_base = np.array(data_frame["std. dev."]) * base_units
     energy_base = np.array(data_frame["energy low [eV]"]) * ureg.electron_volt
 
-    if required_units:
-        scaled_tally_result = scale_tally(
-            tally,
-            tally_base,
-            base_units,
-            ureg[required_units],
-            source_strength,
-            volume,
-        )
-        scaled_tally_std_dev = scale_tally(
-            tally,
-            tally_std_dev_base,
-            base_units,
-            ureg[required_units],
-            source_strength,
-            volume,
-        )
-        tally_std_dev_in_required_units = scaled_tally_std_dev.to(required_units)
-        tally_in_required_units = scaled_tally_result.to(required_units)
-        energy_in_required_units = energy_base.to(required_energy_units)
+    scaled_tally_result = scale_tally(
+        tally,
+        tally_base,
+        base_units,
+        ureg[required_units],
+        source_strength,
+        volume,
+    )
+    tally_in_required_units = scaled_tally_result.to(required_units)
 
-        return energy_in_required_units, tally_in_required_units, tally_std_dev_in_required_units
-    else:
-        return energy_base, tally_base, tally_std_dev_base
+    scaled_tally_std_dev = scale_tally(
+        tally,
+        tally_std_dev_base,
+        base_units,
+        ureg[required_units],
+        source_strength,
+        volume,
+    )
+
+    tally_std_dev_in_required_units = scaled_tally_std_dev.to(required_units)
+
+    energy_in_required_units = energy_base.to(required_energy_units)
+
+    return energy_in_required_units, tally_in_required_units, tally_std_dev_in_required_units
 
 
 def process_dose_tally(
     tally,
-    required_units: str = None,
+    required_units: str = 'picosievert cm **2 / simulated_particle',
     source_strength: float = None,
     volume: float = None,
 ):
@@ -119,33 +120,32 @@ def process_dose_tally(
     tally_result = np.array(data_frame["mean"]) * base_units
     tally_std_dev_base = np.array(data_frame["std. dev."]) * base_units
 
-    if required_units:
-        scaled_tally_result = scale_tally(
-            tally,
-            tally_result,
-            base_units,
-            ureg[required_units],
-            source_strength,
-            volume,
-        )
-        scaled_tally_std_dev = scale_tally(
-            tally,
-            tally_std_dev_base,
-            base_units,
-            ureg[required_units],
-            source_strength,
-            volume,
-        )
-        tally_std_dev_in_required_units = scaled_tally_std_dev.to(required_units)
-        tally_in_required_units = scaled_tally_result.to(required_units)
-        return tally_in_required_units, tally_std_dev_in_required_units
+    scaled_tally_result = scale_tally(
+        tally,
+        tally_result,
+        base_units,
+        ureg[required_units],
+        source_strength,
+        volume,
+    )
+    tally_in_required_units = scaled_tally_result.to(required_units)
 
-    return tally_result, tally_std_dev_base
+    scaled_tally_std_dev = scale_tally(
+        tally,
+        tally_std_dev_base,
+        base_units,
+        ureg[required_units],
+        source_strength,
+        volume,
+    )
+    tally_std_dev_in_required_units = scaled_tally_std_dev.to(required_units)
+
+    return tally_in_required_units, tally_std_dev_in_required_units
 
 
 def process_tally(
     tally,
-    required_units: str = None,
+    required_units: str,
     source_strength: float = None,
     volume: float = None,
 ):
@@ -190,32 +190,36 @@ def process_tally(
     tally_result = np.array(data_frame["mean"]) * base_units
     tally_std_dev_base = np.array(data_frame["std. dev."]) * base_units
 
-    if required_units:
-        scaled_tally_result = scale_tally(
-            tally,
-            tally_result,
-            base_units,
-            ureg[required_units],
-            source_strength,
-            volume,
-        )
-        scaled_tally_std_dev = scale_tally(
-            tally,
-            tally_std_dev_base,
-            base_units,
-            ureg[required_units],
-            source_strength,
-            volume,
-        )
-        tally_std_dev_in_required_units = scaled_tally_std_dev.to(required_units)
-        tally_in_required_units = scaled_tally_result.to(required_units)
-        return tally_in_required_units, tally_std_dev_in_required_units
+    scaled_tally_result = scale_tally(
+        tally,
+        tally_result,
+        base_units,
+        ureg[required_units],
+        source_strength,
+        volume,
+    )
+    tally_in_required_units = scaled_tally_result.to(required_units)
 
-    return tally_result, tally_std_dev_base
+    scaled_tally_std_dev = scale_tally(
+        tally,
+        tally_std_dev_base,
+        base_units,
+        ureg[required_units],
+        source_strength,
+        volume,
+    )
+    tally_std_dev_in_required_units = scaled_tally_std_dev.to(required_units)
+
+    return tally_in_required_units, tally_std_dev_in_required_units
 
 
 def scale_tally(
-    tally, tally_result, base_units, required_units, source_strength, volume
+    tally,
+    tally_result,
+    base_units,
+    required_units,
+    source_strength: float,
+    volume: float
 ):
     time_diff = check_for_dimentionality_difference(
         base_units, required_units, "[time]"
@@ -255,14 +259,16 @@ def scale_tally(
     if length_diff != 0:
         print("length scaling needed")
         if volume:
-            volume = volume * ureg["1 / centimeter ** 3"]
+            volume = volume * ureg["centimeter ** 3"]
         else:
             # volume required but not provided so it is found from the mesh
-            volume = compute_volume_of_voxels(tally) * ureg["1 / centimeter ** 3"]
+            volume = compute_volume_of_voxels(tally) * ureg["centimeter ** 3"]
 
-        if length_diff == -3:
-            tally_result = tally_result / volume
         if length_diff == 3:
+            print("dividing by volume")
+            tally_result = tally_result / volume
+        if length_diff == -3:
+            print("multiplying by volume")
             tally_result = tally_result * volume
 
     return tally_result

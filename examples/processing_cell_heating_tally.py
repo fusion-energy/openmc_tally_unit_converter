@@ -9,7 +9,10 @@ my_tally = statepoint.get_tally(name="2_heating")
 
 
 # returns the tally with base units
-result = opp.process_tally(tally=my_tally)
+result = opp.process_tally(
+    tally=my_tally,
+    required_units='eV / simulated_particle'
+)
 print(f"heating base units = {result}", end="\n\n")
 
 

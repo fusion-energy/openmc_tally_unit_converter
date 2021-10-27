@@ -10,7 +10,10 @@ my_tally = statepoint.get_tally(name="2_flux")
 # print(opp.find_source_strength(fusion_energy_per_second_or_per_pulse=1.3e6))
 
 # returns the tally with base units
-result = opp.process_tally(tally=my_tally)
+result = opp.process_tally(
+    tally=my_tally,
+    required_units="centimeter / simulated_particle"
+)
 print(f"flux base units = {result[0].units}", end="\n\n")
 
 
