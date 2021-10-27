@@ -259,14 +259,16 @@ def scale_tally(
     if length_diff != 0:
         print("length scaling needed")
         if volume:
-            volume = volume * ureg["1 / centimeter ** 3"]
+            volume = volume * ureg["centimeter ** 3"]
         else:
             # volume required but not provided so it is found from the mesh
-            volume = compute_volume_of_voxels(tally) * ureg["1 / centimeter ** 3"]
+            volume = compute_volume_of_voxels(tally) * ureg["centimeter ** 3"]
 
-        if length_diff == -3:
-            tally_result = tally_result / volume
         if length_diff == 3:
+            print("dividing by volume")
+            tally_result = tally_result / volume
+        if length_diff == -3:
+            print("multiplying by volume")
             tally_result = tally_result * volume
 
     return tally_result
