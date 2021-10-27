@@ -12,26 +12,37 @@ class TestUsage(unittest.TestCase):
         statepoint = openmc.StatePoint(filepath="statepoint.2.h5")
         self.my_tally = statepoint.get_tally(name="2_neutron_effective_dose")
 
-    def test_tally_base_units(self):
-        base_units = opp.get_tally_units_dose(self.my_tally)
-        assert base_units[0].units == "centimeter ** 2 * neutron * picosievert / simulated_particle"
+        statepoint = openmc.StatePoint(filepath="statepoint.1.h5")
+        self.my_tally_2 = statepoint.get_tally(name="2_neutron_effective_dose")
+
+    # todo test that processing a flux tally results in a ValueError as it is missing the EnergyFunctionFilter
+
+    def test_cell_tally_dose_no_std_dev(self):
+
+        result = opp.process_dose_tally(
+            tally=self.my_tally_2,
+        )
+
+        assert len(result) == 1
+        assert result[0].units == "centimeter ** 2 * picosievert / simulated_particle"
 
     def test_cell_tally_dose_no_processing(self):
         # returns the tally with base units
         result = opp.process_dose_tally(
             tally=self.my_tally,
         )
-        assert (
-            result.units
-            == "centimeter ** 2 * neutron * picosievert / simulated_particle"
-        )
+        assert len(result) == 2
+        assert result[0].units == "centimeter ** 2 * picosievert / simulated_particle"
+        assert result[1].units == "centimeter ** 2 * picosievert / simulated_particle"
 
     def test_cell_tally_dose_processing_with_scaling(self):
 
         result = opp.process_dose_tally(
             tally=self.my_tally, required_units="sievert cm **2 / simulated_particle"
         )
-        assert result.units == "centimeter ** 2 * sievert / simulated_particle"
+        assert len(result) == 2
+        assert result[0].units == "centimeter ** 2 * sievert / simulated_particle"
+        assert result[1].units == "centimeter ** 2 * sievert / simulated_particle"
 
     def test_cell_tally_dose_with_pulse_processing(self):
         result = opp.process_dose_tally(
@@ -39,7 +50,9 @@ class TestUsage(unittest.TestCase):
             tally=self.my_tally,
             required_units="sievert cm **2 / pulse",
         )
-        assert result.units == "centimeter ** 2 * sievert / pulse"
+        assert len(result) == 2
+        assert result[0].units == "centimeter ** 2 * sievert / pulse"
+        assert result[1].units == "centimeter ** 2 * sievert / pulse"
 
     def test_cell_tally_dose_with_second_processing(self):
         result = opp.process_dose_tally(
@@ -47,7 +60,9 @@ class TestUsage(unittest.TestCase):
             tally=self.my_tally,
             required_units="sievert cm **2 / second",
         )
-        assert result.units == "centimeter ** 2 * sievert / second"
+        assert len(result) == 2
+        assert result[0].units == "centimeter ** 2 * sievert / second"
+        assert result[1].units == "centimeter ** 2 * sievert / second"
 
     def test_cell_tally_dose_with_pulse_processing(self):
         result = opp.process_dose_tally(
@@ -57,4 +72,6 @@ class TestUsage(unittest.TestCase):
             required_units="sievert / second / cm",
         )
         # when dividing by volume perhaps units should emerge as sievert/second
-        assert result.units == "sievert / second / centimeter"
+        assert len(result) == 2
+        assert result[0].units == "sievert / second / centimeter"
+        assert result[1].units == "sievert / second / centimeter"

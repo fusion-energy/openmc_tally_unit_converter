@@ -1,5 +1,4 @@
 import openmc
-import openmc_post_processor as opp
 from spectrum_plotter import plot_spectrum_from_tally  # a convenient plotting package
 
 # loads in the statepoint file containing tallies
@@ -10,10 +9,11 @@ results = {}
 results["2_neutron_spectra"] = statepoint.get_tally(name="2_neutron_spectra")
 results["3_neutron_spectra"] = statepoint.get_tally(name="3_neutron_spectra")
 
+
 # plots a graph of the results with the units as recorded in the tally
 plot = plot_spectrum_from_tally(
     spectrum=results,
-    x_label="Energy [MeV]",
+    x_label="Energy [eV]",
     y_label="neutron flux [centimeters / simulated_particle]",
     x_scale="log",
     y_scale="log",
