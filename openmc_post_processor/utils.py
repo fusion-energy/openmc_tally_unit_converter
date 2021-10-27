@@ -50,10 +50,11 @@ def process_spectra_tally(
     print(f"tally {tally.name} base units {base_units}")
 
     # numpy array is needed as a pandas series can't have units
-    tally_base = np.array(data_frame["mean"]) * base_units
-    tally_std_dev_base = np.array(data_frame["std. dev."]) * base_units
-    energy_base = np.array(data_frame["energy low [eV]"]) * ureg.electron_volt
 
+    energy_base = np.array(data_frame["energy low [eV]"]) * ureg.electron_volt
+    energy_in_required_units = energy_base.to(required_energy_units)
+
+    tally_base = np.array(data_frame["mean"]) * base_units
     scaled_tally_result = scale_tally(
         tally,
         tally_base,
@@ -64,20 +65,23 @@ def process_spectra_tally(
     )
     tally_in_required_units = scaled_tally_result.to(required_units)
 
-    scaled_tally_std_dev = scale_tally(
-        tally,
-        tally_std_dev_base,
-        base_units,
-        ureg[required_units],
-        source_strength,
-        volume,
-    )
+    if "std. dev." in data_frame.columns.to_list():
+        tally_std_dev_base = np.array(data_frame["std. dev."]) * base_units
+        scaled_tally_std_dev = scale_tally(
+            tally,
+            tally_std_dev_base,
+            base_units,
+            ureg[required_units],
+            source_strength,
+            volume,
+        )
+        tally_std_dev_in_required_units = scaled_tally_std_dev.to(required_units)
+    
+        return energy_in_required_units, tally_in_required_units, tally_std_dev_in_required_units
 
-    tally_std_dev_in_required_units = scaled_tally_std_dev.to(required_units)
+    else:
 
-    energy_in_required_units = energy_base.to(required_energy_units)
-
-    return energy_in_required_units, tally_in_required_units, tally_std_dev_in_required_units
+        return energy_in_required_units, tally_in_required_units
 
 
 def process_dose_tally(
@@ -118,7 +122,6 @@ def process_dose_tally(
     print(f"tally {tally.name} base units {base_units}")
 
     tally_result = np.array(data_frame["mean"]) * base_units
-    tally_std_dev_base = np.array(data_frame["std. dev."]) * base_units
 
     scaled_tally_result = scale_tally(
         tally,
@@ -130,17 +133,20 @@ def process_dose_tally(
     )
     tally_in_required_units = scaled_tally_result.to(required_units)
 
-    scaled_tally_std_dev = scale_tally(
-        tally,
-        tally_std_dev_base,
-        base_units,
-        ureg[required_units],
-        source_strength,
-        volume,
-    )
-    tally_std_dev_in_required_units = scaled_tally_std_dev.to(required_units)
-
-    return tally_in_required_units, tally_std_dev_in_required_units
+    if "std. dev." in data_frame.columns.to_list():
+        tally_std_dev_base = np.array(data_frame["std. dev."]) * base_units
+        scaled_tally_std_dev = scale_tally(
+            tally,
+            tally_std_dev_base,
+            base_units,
+            ureg[required_units],
+            source_strength,
+            volume,
+        )
+        tally_std_dev_in_required_units = scaled_tally_std_dev.to(required_units)
+        return tally_in_required_units, tally_std_dev_in_required_units
+    else:
+        return tally_in_required_units
 
 
 def process_tally(
@@ -188,7 +194,6 @@ def process_tally(
     print(f"tally {tally.name} base units {base_units}")
 
     tally_result = np.array(data_frame["mean"]) * base_units
-    tally_std_dev_base = np.array(data_frame["std. dev."]) * base_units
 
     scaled_tally_result = scale_tally(
         tally,
@@ -200,17 +205,23 @@ def process_tally(
     )
     tally_in_required_units = scaled_tally_result.to(required_units)
 
-    scaled_tally_std_dev = scale_tally(
-        tally,
-        tally_std_dev_base,
-        base_units,
-        ureg[required_units],
-        source_strength,
-        volume,
-    )
-    tally_std_dev_in_required_units = scaled_tally_std_dev.to(required_units)
+    if "std. dev." in data_frame.columns.to_list():
+        tally_std_dev_base = np.array(data_frame["std. dev."]) * base_units
+        scaled_tally_std_dev = scale_tally(
+            tally,
+            tally_std_dev_base,
+            base_units,
+            ureg[required_units],
+            source_strength,
+            volume,
+        )
+        tally_std_dev_in_required_units = scaled_tally_std_dev.to(required_units)
 
-    return tally_in_required_units, tally_std_dev_in_required_units
+        return tally_in_required_units, tally_std_dev_in_required_units
+
+    else:
+
+        return tally_in_required_units
 
 
 def scale_tally(

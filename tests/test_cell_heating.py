@@ -1,8 +1,10 @@
+
 import unittest
 
 import openmc_post_processor as opp
 import pytest
 import openmc
+
 
 class TestUsage(unittest.TestCase):
     def setUp(self):
@@ -15,10 +17,14 @@ class TestUsage(unittest.TestCase):
         # returns the tally with base units
         result = opp.process_tally(
             tally=self.my_tally,
+            required_units='eV / simulated_particle'
         )
 
-        assert result.units == "electron_volt / simulated_particle"
-        assert isinstance(result.magnitude, float)
+        assert len(result) == 2
+        assert result[0].units == "electron_volt / simulated_particle"
+        assert result[1].units == "electron_volt / simulated_particle"
+        assert isinstance(result[0][0].magnitude, float)
+        assert isinstance(result[1][0].magnitude, float)
 
     def test_cell_tally_heating_fusion_power_processing(self):
 
@@ -28,8 +34,12 @@ class TestUsage(unittest.TestCase):
             tally=self.my_tally,
             required_units="eV / second",
         )
-        assert result.units == "electron_volt / second"
-        assert isinstance(result.magnitude, float)
+
+        assert len(result) == 2
+        assert result[0].units == "electron_volt / second"
+        assert result[1].units == "electron_volt / second"
+        assert isinstance(result[0][0].magnitude, float)
+        assert isinstance(result[1][0].magnitude, float)
 
     def test_cell_tally_heating_pulse_processing(self):
 
@@ -39,7 +49,10 @@ class TestUsage(unittest.TestCase):
             tally=self.my_tally,
             required_units="eV / pulse",
         )
-        assert result.units == "electron_volt / pulse"
+
+        assert len(result) == 2
+        assert result[0].units == "electron_volt / pulse"
+        assert result[1].units == "electron_volt / pulse"
 
     def test_cell_tally_heating_pulse_processing_and_scaling(self):
 
@@ -49,7 +62,10 @@ class TestUsage(unittest.TestCase):
             tally=self.my_tally,
             required_units="MeV / pulse",
         )
-        assert result.units == "megaelectron_volt / pulse"
+
+        assert len(result) == 2
+        assert result[0].units == "megaelectron_volt / pulse"
+        assert result[1].units == "megaelectron_volt / pulse"
 
     def test_cell_tally_heating_fusion_power_processing_and_scaling(self):
 
@@ -59,7 +75,10 @@ class TestUsage(unittest.TestCase):
             tally=self.my_tally,
             required_units="MeV / second",
         )
-        assert result.units == "megaelectron_volt / second"
+
+        assert len(result) == 2
+        assert result[0].units == "megaelectron_volt / second"
+        assert result[1].units == "megaelectron_volt / second"
 
     def test_cell_tally_heating_fusion_power_processing_and_conversion(self):
 
@@ -67,7 +86,10 @@ class TestUsage(unittest.TestCase):
         result = opp.process_tally(
             source_strength=1.3e6, tally=self.my_tally, required_units="joule / second"
         )
-        assert result.units == "joule / second"
+
+        assert len(result) == 2
+        assert result[0].units == "joule / second"
+        assert result[1].units == "joule / second"
 
     def test_cell_tally_heating_pulse_processing_and_conversion(self):
 
@@ -77,7 +99,10 @@ class TestUsage(unittest.TestCase):
             tally=self.my_tally,
             required_units="joules / pulse",  # joules or joule can be requested
         )
-        assert result.units == "joule / pulse"
+
+        assert len(result) == 2
+        assert result[0].units == "joule / pulse"
+        assert result[1].units == "joule / pulse"
 
 
 if __name__ == "__main__":
