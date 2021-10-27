@@ -15,10 +15,21 @@ result = opp.process_spectra_tally(
 )
 print(f"spectra with base units = {result}", end="\n\n")
 
+# returns the tally with base units
+result = opp.process_spectra_tally(
+    tally=my_tally,
+    required_units="centimeter",
+    required_energy_units="MeV",
+)
+print(f"spectra with base units = {result}", end="\n\n")
+
 
 # returns the tally with normalisation per pulse
 result = opp.process_spectra_tally(
-    tally=my_tally, required_units=["eV", "centimeter / pulse"], source_strength=1.3e6
+    tally=my_tally,
+    required_units="centimeter / pulse",
+    required_energy_units="eV",
+    source_strength=1.3e6
 )
 print(f"spectra per pulse = {result}", end="\n\n")
 
@@ -26,7 +37,9 @@ print(f"spectra per pulse = {result}", end="\n\n")
 # returns the tally scalled and normalisation for source strength
 print(f"spectra per second = {result}", end="\n\n")
 result = opp.process_spectra_tally(
-    tally=my_tally, required_units=["MeV", "centimeter / second"], source_strength=1e9
+    tally=my_tally,
+    required_units="centimeter / second",
+    required_energy_units="MeV",
+    source_strength=1e9
 )
 print(f"spectra per pulse = {result}", end="\n\n")
-

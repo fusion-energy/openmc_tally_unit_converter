@@ -11,7 +11,8 @@ ureg.load_definitions(str(Path(__file__).parent / "neutronics_units.txt"))
 
 def process_spectra_tally(
     tally,
-    required_units: Tuple[str, str] = None,
+    required_units: str = None,
+    required_energy_units: str = None,
     source_strength: float = None,
     volume: float = None,
 ) -> tuple:
@@ -35,37 +36,47 @@ def process_spectra_tally(
         Tuple of spectra energies and tally results
     """
 
-    check_for_unit_modifying_filters(tally)
+    if not check_for_energy_filter(tally):
+        raise ValueError('EnergyFilter was not found in spectra tally')
+
+    if check_for_energy_function_filter(tally):
+        raise ValueError('EnergyFunctionFilter was found in spectra tally')
 
     data_frame = tally.get_pandas_dataframe()
 
     # checks for user provided base units
-    base_units = get_tally_units_spectra(tally)
+    base_units = get_tally_units(tally)
     print(f"tally {tally.name} base units {base_units}")
 
-    for filter in tally.filters:
-        if isinstance(filter, openmc.filter.EnergyFilter):
-            energy_base = filter.values * base_units[0]
-            # skip other filters and contine or error if not found?
-
     # numpy array is needed as a pandas series can't have units
-    tally_base = np.array(data_frame["mean"]) * base_units[1]
+    tally_base = np.array(data_frame["mean"]) * base_units
+    tally_std_dev_base = np.array(data_frame["std. dev."]) * base_units
+    energy_base = np.array(data_frame["energy low [eV]"]) * ureg.electron_volt
 
     if required_units:
         scaled_tally_result = scale_tally(
             tally,
             tally_base,
-            base_units[1],
-            ureg[required_units[1]],
+            base_units,
+            ureg[required_units],
             source_strength,
             volume,
         )
-        tally_in_required_units = scaled_tally_result.to(required_units[1])
-        energy_in_required_units = energy_base.to(required_units[0])
+        scaled_tally_std_dev = scale_tally(
+            tally,
+            tally_std_dev_base,
+            base_units,
+            ureg[required_units],
+            source_strength,
+            volume,
+        )
+        tally_std_dev_in_required_units = scaled_tally_std_dev.to(required_units)
+        tally_in_required_units = scaled_tally_result.to(required_units)
+        energy_in_required_units = energy_base.to(required_energy_units)
 
-        return energy_in_required_units, tally_in_required_units
+        return energy_in_required_units, tally_in_required_units, tally_std_dev_in_required_units
     else:
-        return energy_base, tally_base
+        return energy_base, tally_base, tally_std_dev_base
 
 
 def process_dose_tally(
@@ -94,38 +105,42 @@ def process_dose_tally(
         The dose tally result in the required units
     """
 
-    data_frame = tally.get_pandas_dataframe()
+    if not check_for_energy_function_filter(tally):
+        raise ValueError('EnergyFunctionFilter was not found in dose tally')
 
     # checks for user provided base units
-    base_units = get_tally_units_dose(tally)
+    base_units = get_tally_units(tally)
+    base_units = ureg.picosievert * ureg.centimeter * base_units
+
+    data_frame = tally.get_pandas_dataframe()
+
     print(f"tally {tally.name} base units {base_units}")
 
-    if len(data_frame["mean"]) == 1:
-        # just a single number in the tally result
-        tally_result = data_frame["mean"].sum() * base_units[0]
-    else:
-        # more than one number, a mesh tally or several cell tallies
-        tally_filter = tally.find_filter(filter_type=openmc.MeshFilter)
-        shape = tally_filter.mesh.dimension.tolist()
-        if 1 in shape:
-            # 2d mesh
-            shape.remove(1)
-        tally_result = np.array(data_frame["mean"]) * base_units[0]
-        tally_result = tally_result.reshape(shape)
+    tally_result = np.array(data_frame["mean"]) * base_units
+    tally_std_dev_base = np.array(data_frame["std. dev."]) * base_units
 
     if required_units:
         scaled_tally_result = scale_tally(
             tally,
             tally_result,
-            base_units[0],
+            base_units,
             ureg[required_units],
             source_strength,
             volume,
         )
+        scaled_tally_std_dev = scale_tally(
+            tally,
+            tally_std_dev_base,
+            base_units,
+            ureg[required_units],
+            source_strength,
+            volume,
+        )
+        tally_std_dev_in_required_units = scaled_tally_std_dev.to(required_units)
         tally_in_required_units = scaled_tally_result.to(required_units)
-        return tally_in_required_units
+        return tally_in_required_units, tally_std_dev_in_required_units
 
-    return tally_result
+    return tally_result, tally_std_dev_base
 
 
 def process_tally(
@@ -152,42 +167,51 @@ def process_tally(
     Returns:
         The dose tally result in the required units
     """
+
+    if check_for_energy_function_filter(tally):
+        msg = (
+            "An EnergyFunctionFilter was found in the tally. This "
+            "modifies the tally units and the base units of the"
+            "EnergyFunctionFilter are not known to OpenMC. Therefore "
+            "the units of this tally can not be found. If you have "
+            "applied dose coefficients to an EnergyFunctionFilter "
+            "the units of these are known and yo can use the "
+            "get_tally_units_dose function instead of the "
+            "get_tally_units"
+        )
+        raise ValueError(msg)
+
     data_frame = tally.get_pandas_dataframe()
 
-    check_for_unit_modifying_filters(tally)
-
-    # checks for user provided base units
     base_units = get_tally_units(tally)
+
     print(f"tally {tally.name} base units {base_units}")
 
-    # there might be more than one based unit entry if spectra has been tallied
-    if len(base_units) == 1:
-        if len(data_frame["mean"]) == 1:
-            # just a single number in the tally result
-            tally_result = data_frame["mean"].sum() * base_units[0]
-        else:
-            # more than one number, a mesh tally
-            tally_filter = tally.find_filter(filter_type=openmc.MeshFilter)
-            shape = tally_filter.mesh.dimension.tolist()
-            if 1 in shape:
-                # 2d mesh
-                shape.remove(1)
-            tally_result = np.array(data_frame["mean"]) * base_units[0]
-            tally_result = tally_result.reshape(shape)
+    tally_result = np.array(data_frame["mean"]) * base_units
+    tally_std_dev_base = np.array(data_frame["std. dev."]) * base_units
 
-        if required_units:
-            scaled_tally_result = scale_tally(
-                tally,
-                tally_result,
-                base_units[0],
-                ureg[required_units],
-                source_strength,
-                volume,
-            )
-            tally_in_required_units = scaled_tally_result.to(required_units)
-            return tally_in_required_units
+    if required_units:
+        scaled_tally_result = scale_tally(
+            tally,
+            tally_result,
+            base_units,
+            ureg[required_units],
+            source_strength,
+            volume,
+        )
+        scaled_tally_std_dev = scale_tally(
+            tally,
+            tally_std_dev_base,
+            base_units,
+            ureg[required_units],
+            source_strength,
+            volume,
+        )
+        tally_std_dev_in_required_units = scaled_tally_std_dev.to(required_units)
+        tally_in_required_units = scaled_tally_result.to(required_units)
+        return tally_in_required_units, tally_std_dev_in_required_units
 
-    return tally_result
+    return tally_result, tally_std_dev_base
 
 
 def scale_tally(
@@ -320,59 +344,49 @@ def get_cell_ids_from_tally_filters(tally):
     return cell_ids
 
 
-def get_tally_units_spectra(tally):
+# def get_tally_units_dose(tally):
 
-    units = get_tally_units(tally)
+#     # An EnergyFunctionFilter is exspeted in dose tallies
+#     units = get_tally_units(tally)
+
+#     units = [ureg.picosievert * ureg.centimeter * units[0]]
+
+#     # check it is a dose tally by looking for a openmc.filter.EnergyFunctionFilter
+#     for filter in tally.filters:
+#         if isinstance(filter, openmc.filter.EnergyFunctionFilter):
+#             print("filter is EnergyFunctionFilter")
+#             # effective_dose
+#             # dose coefficients have pico sievert cm **2
+#             # flux has cm2 / simulated_particle units
+#             # dose on a surface uses a current score (units of per simulated_particle) and is therefore * area to get pSv / source particle
+#             # dose on a volume uses a flux score (units of cm2 per simulated particle) and therefore gives pSv cm**4 / simulated particle
+            
+#             return units
+
+#     raise ValueError(
+#         "units for dose tally can't be found, an EnergyFunctionFilter was not present"
+#     )
+
+def check_for_energy_filter(tally):
 
     # check it is a spectra tally by looking for a openmc.filter.EnergyFilter
     for filter in tally.filters:
         if isinstance(filter, openmc.filter.EnergyFilter):
             # spectra tally has units for the energy as well as the flux
-            units = [ureg.electron_volt, units[0]]
-            return units
+            return True
+    return False
 
-    raise ValueError(
-        "units for spectra tally can't be found, an EnergyFilter was not present"
-    )
-
-
-def get_tally_units_dose(tally):
-
-    # An EnergyFunctionFilter is exspeted in dose tallies
-    units = get_tally_units(tally)
-
-    # check it is a dose tally by looking for a openmc.filter.EnergyFunctionFilter
-    for filter in tally.filters:
-        if isinstance(filter, openmc.filter.EnergyFunctionFilter):
-            print("filter is EnergyFunctionFilter")
-            # effective_dose
-            # dose coefficients have pico sievert cm **2
-            # flux has cm2 / simulated_particle units
-            # dose on a surface uses a current score (units of per simulated_particle) and is therefore * area to get pSv / source particle
-            # dose on a volume uses a flux score (units of cm2 per simulated particle) and therefore gives pSv cm**4 / simulated particle
-            units = [ureg.picosievert * ureg.centimeter * units[0]]
-            return units
-
-    raise ValueError(
-        "units for dose tally can't be found, an EnergyFunctionFilter was not present"
-    )
+    # raise ValueError(
+    #     "units for spectra tally can't be found, an EnergyFilter was not present"
+    # )
 
 
-def check_for_unit_modifying_filters(tally):
+def check_for_energy_function_filter(tally):
     # check for EnergyFunctionFilter which modify the units of the tally
     for filter in tally.filters:
         if isinstance(filter, openmc.filter.EnergyFunctionFilter):
-            msg = (
-                "An EnergyFunctionFilter was found in the tally. This "
-                "modifies the tally units and the base units of the"
-                "EnergyFunctionFilter are not known to OpenMC. Therefore "
-                "the units of this tally can not be found. If you have "
-                "applied dose coefficients to an EnergyFunctionFilter "
-                "the units of these are known and yo can use the "
-                "get_tally_units_dose function instead of the "
-                "get_tally_units"
-            )
-            raise ValueError(msg)
+            return True
+    return False
 
 
 def get_tally_units(tally):
@@ -380,18 +394,18 @@ def get_tally_units(tally):
 
     if tally.scores == ["current"]:
         units = get_particles_from_tally_filters(tally, ureg)
-        units = [units / (ureg.simulated_particle * ureg.centimeter ** 2)]
+        units = units / (ureg.simulated_particle * ureg.centimeter ** 2)
 
     if tally.scores == ["flux"]:
         print("score is flux")
         # tally has units of particle-cm2 per simulated_particle
         # https://openmc.discourse.group/t/normalizing-tally-to-get-flux-value/99/4
         units = get_particles_from_tally_filters(tally, ureg)
-        units = [units * ureg.centimeter / ureg.simulated_particle]
+        units = units * ureg.centimeter / ureg.simulated_particle
 
     elif tally.scores == ["heating"]:
         # heating units are eV / simulated_particle
-        units = [ureg.electron_volt / ureg.simulated_particle]
+        units = ureg.electron_volt / ureg.simulated_particle
 
     else:
         # return  [1 / ureg.simulated_particle]
