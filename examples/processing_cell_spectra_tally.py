@@ -29,7 +29,7 @@ result = opp.process_spectra_tally(
     tally=my_tally,
     required_units="centimeter / pulse",
     required_energy_units="eV",
-    source_strength=1.3e6
+    source_strength=1.3e6,
 )
 print(f"spectra per pulse = {result}", end="\n\n")
 
@@ -40,6 +40,6 @@ result = opp.process_spectra_tally(
     tally=my_tally,
     required_units="centimeter / second",
     required_energy_units="MeV",
-    source_strength=1e9
+    source_strength=1e9,
 )
 print(f"spectra per pulse = {result}", end="\n\n")

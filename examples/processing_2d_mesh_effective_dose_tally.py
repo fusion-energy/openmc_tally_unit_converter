@@ -17,8 +17,7 @@ print(result)
 
 # scaled from picosievert to sievert
 result = opp.process_dose_tally(
-    tally=my_tally,
-    required_units="sievert cm **2 / simulated_particle"
+    tally=my_tally, required_units="sievert cm **2 / simulated_particle"
 )
 # the tally result with required units
 print(result)

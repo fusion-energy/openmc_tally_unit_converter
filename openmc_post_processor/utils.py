@@ -12,7 +12,7 @@ ureg.load_definitions(str(Path(__file__).parent / "neutronics_units.txt"))
 def process_spectra_tally(
     tally,
     required_units: str = "centimeters / simulated_particle",
-    required_energy_units: str = 'eV',
+    required_energy_units: str = "eV",
     source_strength: float = None,
     volume: float = None,
 ) -> tuple:
@@ -38,10 +38,10 @@ def process_spectra_tally(
     """
 
     if not check_for_energy_filter(tally):
-        raise ValueError('EnergyFilter was not found in spectra tally')
+        raise ValueError("EnergyFilter was not found in spectra tally")
 
     if check_for_energy_function_filter(tally):
-        raise ValueError('EnergyFunctionFilter was found in spectra tally')
+        raise ValueError("EnergyFunctionFilter was found in spectra tally")
 
     data_frame = tally.get_pandas_dataframe()
 
@@ -76,8 +76,12 @@ def process_spectra_tally(
             volume,
         )
         tally_std_dev_in_required_units = scaled_tally_std_dev.to(required_units)
-    
-        return energy_in_required_units, tally_in_required_units, tally_std_dev_in_required_units
+
+        return (
+            energy_in_required_units,
+            tally_in_required_units,
+            tally_std_dev_in_required_units,
+        )
 
     else:
 
@@ -86,7 +90,7 @@ def process_spectra_tally(
 
 def process_dose_tally(
     tally,
-    required_units: str = 'picosievert cm **2 / simulated_particle',
+    required_units: str = "picosievert cm **2 / simulated_particle",
     source_strength: float = None,
     volume: float = None,
 ):
@@ -111,7 +115,7 @@ def process_dose_tally(
     """
 
     if not check_for_energy_function_filter(tally):
-        raise ValueError('EnergyFunctionFilter was not found in dose tally')
+        raise ValueError("EnergyFunctionFilter was not found in dose tally")
 
     # checks for user provided base units
     base_units = get_tally_units(tally)
@@ -230,7 +234,7 @@ def scale_tally(
     base_units,
     required_units,
     source_strength: float,
-    volume: float
+    volume: float,
 ):
     time_diff = check_for_dimentionality_difference(
         base_units, required_units, "[time]"
@@ -377,12 +381,13 @@ def get_cell_ids_from_tally_filters(tally):
 #             # flux has cm2 / simulated_particle units
 #             # dose on a surface uses a current score (units of per simulated_particle) and is therefore * area to get pSv / source particle
 #             # dose on a volume uses a flux score (units of cm2 per simulated particle) and therefore gives pSv cm**4 / simulated particle
-            
+
 #             return units
 
 #     raise ValueError(
 #         "units for dose tally can't be found, an EnergyFunctionFilter was not present"
 #     )
+
 
 def check_for_energy_filter(tally):
 
@@ -429,9 +434,11 @@ def get_tally_units(tally):
         units = ureg.electron_volt / ureg.simulated_particle
 
     else:
-        msg = ("units for tally can't be found. Tallies that are supported "
-               "by get_tally_units function are those with scores of current, "
-               "flux, heating, damage-energy")
+        msg = (
+            "units for tally can't be found. Tallies that are supported "
+            "by get_tally_units function are those with scores of current, "
+            "flux, heating, damage-energy"
+        )
         raise ValueError(msg)
 
     return units
