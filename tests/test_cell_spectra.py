@@ -4,6 +4,7 @@ import openmc_post_processor as opp
 import pytest
 import openmc
 
+
 class TestUsage(unittest.TestCase):
     def setUp(self):
 

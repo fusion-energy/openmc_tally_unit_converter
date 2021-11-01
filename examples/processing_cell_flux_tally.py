@@ -11,8 +11,7 @@ my_tally = statepoint.get_tally(name="2_flux")
 
 # returns the tally with base units
 result = opp.process_tally(
-    tally=my_tally,
-    required_units="centimeter / simulated_particle"
+    tally=my_tally, required_units="centimeter / simulated_particle"
 )
 print(f"flux base units = {result[0].units}", end="\n\n")
 

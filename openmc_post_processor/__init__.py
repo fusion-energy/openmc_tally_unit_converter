@@ -8,5 +8,5 @@ from .utils import (
     process_dose_tally,
     process_spectra_tally,
     process_damage_energy_tally,
-    scale_tally
+    scale_tally,
 )
