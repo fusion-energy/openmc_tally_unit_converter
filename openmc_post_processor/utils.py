@@ -424,11 +424,15 @@ def get_tally_units(tally):
         # heating units are eV / simulated_particle
         units = ureg.electron_volt / ureg.simulated_particle
 
+    elif tally.scores == ["damage-energy"]:
+        # damage-energy units are eV / simulated_particle
+        units = ureg.electron_volt / ureg.simulated_particle
+
     else:
-        # return  [1 / ureg.simulated_particle]
-        raise ValueError(
-            "units for tally can't be found, supported tallies are currently limited"
-        )
+        msg = ("units for tally can't be found. Tallies that are supported "
+               "by get_tally_units function are those with scores of current, "
+               "flux, heating, damage-energy")
+        raise ValueError(msg)
 
     return units
 
