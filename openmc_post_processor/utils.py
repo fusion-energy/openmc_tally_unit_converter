@@ -16,7 +16,7 @@ def process_damage_energy_tally(
     source_strength: float = None,
     volume: float = None,
     energy_per_displacement: float = None,
-    recombination_fraction: float = None,
+    recombination_fraction: float = 0,
     material: float = None,
 ):
     """Processes a damage-energy tally converting the tally with default units
@@ -54,7 +54,18 @@ def process_damage_energy_tally(
 
     print(f"tally {tally.name} base units {base_units}")
 
-    tally_result = np.array(data_frame["mean"]) * base_units
+    tally_result = np.array(data_frame["mean"]) 
+    
+    if recombination_fraction:
+        if recombination_fraction < 0:
+            raise ValueError(f"recombination_fraction can't be smaller than 1. recombination_fraction is {recombination_fraction}")
+        if recombination_fraction > 1:
+            raise ValueError(f"recombination_fraction can't be larger than 1. recombination_fraction is {recombination_fraction}")
+
+        tally_result = tally_result * (1. - recombination_fraction)
+
+    
+    tally_result = tally_result * base_units
 
     if material:
         atomic_mass_in_g = material.average_molar_mass * 1.66054E-24
@@ -73,8 +84,7 @@ def process_damage_energy_tally(
         number_of_atoms_per_cm3,
         energy_per_displacement,
     )
-    if recombination_fraction:
-        scaled_tally_result = scaled_tally_result * recombination_fraction
+
     tally_in_required_units = scaled_tally_result.to(required_units)
 
     if "std. dev." in data_frame.columns.to_list():
@@ -88,8 +98,8 @@ def process_damage_energy_tally(
             number_of_atoms_per_cm3,
             energy_per_displacement,
         )
-        if recombination_fraction:
-            scaled_tally_std_dev = scaled_tally_std_dev * recombination_fraction
+        # if recombination_fraction:
+        #     scaled_tally_std_dev = scaled_tally_std_dev * recombination_fraction
         tally_std_dev_in_required_units = scaled_tally_std_dev.to(required_units)
         return tally_in_required_units, tally_std_dev_in_required_units
     else:
@@ -334,9 +344,6 @@ def scale_tally(
     displacement_diff = check_for_dimentionality_difference(
         tally_result.units, required_units, "[displacement]"
     )
-
-    print(time_diff, mass_diff, length_diff, displacement_diff)
-    input()
 
     if time_diff == -2 and mass_diff==1 and length_diff == 2 and displacement_diff == -1:
         print("energy per displacement_diff scaling needed (eV)")
