@@ -47,16 +47,24 @@ my_mat.set_density("g/cm3", 1)
 # )
 # print(f"damage-energy scaled base units = {result}", end="\n\n")
 
+# result, std_dev = opp.process_damage_energy_tally(
+#     tally=my_tally,
+#     required_units="displacements",
+#     source_strength=1,
+#     volume=5,
+#     material=my_mat,
+#     energy_per_displacement=10,
+#     recombination_fraction=0.1
+# )
+# print(f"damage-energy = {result}", end="\n\n")
+
 result, std_dev = opp.process_damage_energy_tally(
     tally=my_tally,
-    required_units="displacements",
-    source_strength=1,
+    required_units="displacements per pulse",
+    source_strength=0.5,
     volume=5,
     material=my_mat,
     energy_per_displacement=10,
-<<<<<<< HEAD
     recombination_fraction=0.1
-=======
->>>>>>> eba135b5de3b17e3e1e92cc4066641b682e84048
 )
 print(f"damage-energy = {result}", end="\n\n")
