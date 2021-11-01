@@ -9,10 +9,9 @@ ureg = pint.UnitRegistry()
 ureg.load_definitions(str(Path(__file__).parent / "neutronics_units.txt"))
 
 
-
 def process_damage_energy_tally(
     tally,
-    required_units: str = 'eV / simulated_particle',
+    required_units: str = "eV / simulated_particle",
     source_strength: float = None,
     volume: float = None,
     energy_per_displacement: float = None,
@@ -45,7 +44,7 @@ def process_damage_energy_tally(
     """
 
     if check_for_energy_function_filter(tally):
-        raise ValueError('EnergyFunctionFilter found in a damage-energy tally')
+        raise ValueError("EnergyFunctionFilter found in a damage-energy tally")
 
     # checks for user provided base units
     base_units = get_tally_units(tally)
@@ -57,12 +56,12 @@ def process_damage_energy_tally(
     tally_result = np.array(data_frame["mean"]) * base_units
 
     if material:
-        atomic_mass_in_g = material.average_molar_mass * 1.66054E-24
+        atomic_mass_in_g = material.average_molar_mass * 1.66054e-24
         density_in_g_per_cm3 = material.get_mass_density()
         number_of_atoms_per_cm3 = density_in_g_per_cm3 / atomic_mass_in_g
     else:
         number_of_atoms_per_cm3 = None
-    print('number_of_atoms_per_cm3', number_of_atoms_per_cm3)
+    print("number_of_atoms_per_cm3", number_of_atoms_per_cm3)
 
     scaled_tally_result = scale_tally(
         tally,
@@ -99,7 +98,7 @@ def process_damage_energy_tally(
 def process_spectra_tally(
     tally,
     required_units: str = "centimeters / simulated_particle",
-    required_energy_units: str = 'eV',
+    required_energy_units: str = "eV",
     source_strength: float = None,
     volume: float = None,
 ) -> tuple:
@@ -125,10 +124,10 @@ def process_spectra_tally(
     """
 
     if not check_for_energy_filter(tally):
-        raise ValueError('EnergyFilter was not found in spectra tally')
+        raise ValueError("EnergyFilter was not found in spectra tally")
 
     if check_for_energy_function_filter(tally):
-        raise ValueError('EnergyFunctionFilter was found in spectra tally')
+        raise ValueError("EnergyFunctionFilter was found in spectra tally")
 
     data_frame = tally.get_pandas_dataframe()
 
@@ -161,8 +160,12 @@ def process_spectra_tally(
             volume,
         )
         tally_std_dev_in_required_units = scaled_tally_std_dev.to(required_units)
-    
-        return energy_in_required_units, tally_in_required_units, tally_std_dev_in_required_units
+
+        return (
+            energy_in_required_units,
+            tally_in_required_units,
+            tally_std_dev_in_required_units,
+        )
 
     else:
 
@@ -171,7 +174,7 @@ def process_spectra_tally(
 
 def process_dose_tally(
     tally,
-    required_units: str = 'picosievert cm **2 / simulated_particle',
+    required_units: str = "picosievert cm **2 / simulated_particle",
     source_strength: float = None,
     volume: float = None,
 ):
@@ -196,7 +199,7 @@ def process_dose_tally(
     """
 
     if not check_for_energy_function_filter(tally):
-        raise ValueError('EnergyFunctionFilter was not found in dose tally')
+        raise ValueError("EnergyFunctionFilter was not found in dose tally")
 
     # checks for user provided base units
     base_units = get_tally_units(tally)
@@ -310,7 +313,6 @@ def process_tally(
         return tally_in_required_units
 
 
-
 def scale_tally(
     tally,
     tally_result,
@@ -318,7 +320,7 @@ def scale_tally(
     source_strength: float,
     volume: float,
     atoms: float = None,
-    energy_per_displacement: float = None
+    energy_per_displacement: float = None,
 ):
 
     # energy_per_displacement
@@ -338,16 +340,22 @@ def scale_tally(
     print(time_diff, mass_diff, length_diff, displacement_diff)
     input()
 
-    if time_diff == -2 and mass_diff==1 and length_diff == 2 and displacement_diff == -1:
+    if (
+        time_diff == -2
+        and mass_diff == 1
+        and length_diff == 2
+        and displacement_diff == -1
+    ):
         print("energy per displacement_diff scaling needed (eV)")
         if energy_per_displacement:
-            energy_per_displacement = energy_per_displacement * ureg.electron_volt / ureg['displacement']
+            energy_per_displacement = (
+                energy_per_displacement * ureg.electron_volt / ureg["displacement"]
+            )
             tally_result = tally_result / energy_per_displacement
         else:
             raise ValueError(
                 f"energy_per_displacement is required but currently set to {energy_per_displacement}"
             )
-
 
     time_diff = check_for_dimentionality_difference(
         tally_result.units, required_units, "[time]"
@@ -364,7 +372,6 @@ def scale_tally(
             raise ValueError(
                 f"source_strength is required but currently set to {source_strength}"
             )
-
 
     time_diff = check_for_dimentionality_difference(
         tally_result.units, required_units, "[pulse]"
@@ -391,7 +398,9 @@ def scale_tally(
             volume_with_units = volume * ureg["centimeter ** 3"]
         else:
             # volume required but not provided so it is found from the mesh
-            volume_with_units = compute_volume_of_voxels(tally) * ureg["centimeter ** 3"]
+            volume_with_units = (
+                compute_volume_of_voxels(tally) * ureg["centimeter ** 3"]
+            )
 
         if length_diff == 3:
             print("dividing by volume")
@@ -416,9 +425,11 @@ def scale_tally(
                 tally_result = tally_result * atoms
 
         else:
-            msg = (f"atoms is required but currently set to {atoms}. Atoms "
-                   "can be calculated automatically from material and volume "
-                   "inputs")
+            msg = (
+                f"atoms is required but currently set to {atoms}. Atoms "
+                "can be calculated automatically from material and volume "
+                "inputs"
+            )
             raise ValueError(msg)
     return tally_result
 
@@ -540,9 +551,11 @@ def get_tally_units(tally):
         units = ureg.electron_volt / ureg.simulated_particle
 
     else:
-        msg = ("units for tally can't be found. Tallies that are supported "
-               "by get_tally_units function are those with scores of current, "
-               "flux, heating, damage-energy")
+        msg = (
+            "units for tally can't be found. Tallies that are supported "
+            "by get_tally_units function are those with scores of current, "
+            "flux, heating, damage-energy"
+        )
         raise ValueError(msg)
 
     return units

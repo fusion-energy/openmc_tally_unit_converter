@@ -35,8 +35,8 @@ my_tally = statepoint.get_tally(name="2_damage-energy")
 # returns the tally with scalled based units (MeV instead of eV)
 
 my_mat = openmc.Material()
-my_mat.add_element('Fe', 1)
-my_mat.set_density('g/cm3', 1)
+my_mat.add_element("Fe", 1)
+my_mat.set_density("g/cm3", 1)
 
 # result, std_dev = opp.process_damage_energy_tally(
 #     tally=my_tally,
@@ -53,6 +53,6 @@ result, std_dev = opp.process_damage_energy_tally(
     source_strength=1,
     volume=5,
     material=my_mat,
-    energy_per_displacement=10
+    energy_per_displacement=10,
 )
 print(f"damage-energy = {result}", end="\n\n")
