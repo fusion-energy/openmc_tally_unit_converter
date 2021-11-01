@@ -53,6 +53,7 @@ result, std_dev = opp.process_damage_energy_tally(
     source_strength=1,
     volume=5,
     material=my_mat,
-    energy_per_displacement=10
+    energy_per_displacement=10,
+    recombination_fraction=0.1
 )
 print(f"damage-energy = {result}", end="\n\n")
