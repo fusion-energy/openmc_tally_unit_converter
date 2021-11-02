@@ -19,7 +19,7 @@ plot = plot_spectrum_from_tally(
     y_scale="log",
     filename="combine_spectra_plot_1.html",
     required_energy_units="eV",
-    plotting_package='plotly',
+    plotting_package="plotly",
     required_units="centimeters / simulated_particle",
 )
 
@@ -33,7 +33,7 @@ plot = plot_spectrum_from_tally(
     y_scale="log",
     filename="combine_spectra_plot_2.html",
     required_energy_units="MeV",
-    plotting_package='plotly',
+    plotting_package="plotly",
     required_units="centimeter / second",
     source_strength=1.3e6,
 )
@@ -47,8 +47,8 @@ plot = plot_spectrum_from_tally(
     y_scale="log",
     filename="combine_spectra_plot_3.html",
     required_energy_units="MeV",
-    plotting_package='plotly',
+    plotting_package="plotly",
     required_units="neutrons / second * cm ** -2",
     source_strength=1.3e7,
-    volume=100
+    volume=100,
 )

@@ -7,5 +7,6 @@ from .utils import (
     process_tally,
     process_dose_tally,
     process_spectra_tally,
-    scale_tally
+    process_damage_energy_tally,
+    scale_tally,
 )

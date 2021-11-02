@@ -28,7 +28,6 @@ jobs:
       - name: install package
         run: |
           conda install -c conda-forge openmc
-          # conda install -c cadquery -c conda-forge cadquery=2.1
           python setup.py install
 
       - name: install packages for tests
@@ -45,6 +44,7 @@ jobs:
         run: |
           cd examples
           python processing_2d_mesh_effective_dose_tally.py
+          python processing_cell_damage-energy_tally.py
           python processing_cell_effective_dose_tally.py
           python processing_cell_flux_tally.py
           python processing_cell_heating_tally.py

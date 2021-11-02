@@ -1,4 +1,3 @@
-
 import unittest
 
 import openmc_post_processor as opp
@@ -16,8 +15,7 @@ class TestUsage(unittest.TestCase):
     def test_cell_tally_heating_no_processing(self):
         # returns the tally with base units
         result = opp.process_tally(
-            tally=self.my_tally,
-            required_units='eV / simulated_particle'
+            tally=self.my_tally, required_units="eV / simulated_particle"
         )
 
         assert len(result) == 2
