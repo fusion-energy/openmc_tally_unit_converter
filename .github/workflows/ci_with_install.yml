@@ -45,8 +45,7 @@ jobs:
       - name: Run examples
         run: |
           cd examples
-          cp ../tests/statepoint.2.h5 .
-          cp ../tests/statepoint.1.h5 .
+          python tests/create_statepoint_file_for_testing.py --batches 2 --particles 100
           python processing_2d_mesh_effective_dose_tally.py
           python processing_cell_damage-energy_tally.py
           python processing_cell_effective_dose_tally.py
