@@ -53,17 +53,20 @@ def process_damage_energy_tally(
 
     print(f"tally {tally.name} base units {base_units}")
 
-    tally_result = np.array(data_frame["mean"]) 
-    
+    tally_result = np.array(data_frame["mean"])
+
     if recombination_fraction:
         if recombination_fraction < 0:
-            raise ValueError(f"recombination_fraction can't be smaller than 1. recombination_fraction is {recombination_fraction}")
+            raise ValueError(
+                f"recombination_fraction can't be smaller than 1. recombination_fraction is {recombination_fraction}"
+            )
         if recombination_fraction > 1:
-            raise ValueError(f"recombination_fraction can't be larger than 1. recombination_fraction is {recombination_fraction}")
+            raise ValueError(
+                f"recombination_fraction can't be larger than 1. recombination_fraction is {recombination_fraction}"
+            )
 
-        tally_result = tally_result * (1. - recombination_fraction)
+        tally_result = tally_result * (1.0 - recombination_fraction)
 
-    
     tally_result = tally_result * base_units
 
     if material:
