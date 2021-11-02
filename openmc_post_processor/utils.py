@@ -347,7 +347,7 @@ def scale_tally(
         tally_result.units, required_units, "[mass]"
     )
     displacement_diff = check_for_dimentionality_difference(
-        tally_result.units, required_units, "[displacement]"
+        tally_result.units, required_units, "[displacements]"
     )
 
     if (
@@ -360,8 +360,22 @@ def scale_tally(
         print("energy per displacement_diff scaling needed (eV)")
         if energy_per_displacement:
             energy_per_displacement = (
-                energy_per_displacement * ureg.electron_volt / ureg["displacement"]
+                energy_per_displacement * ureg.electron_volt / ureg["displacements"]
             )
+            tally_result = tally_result / energy_per_displacement
+        else:
+            raise ValueError(
+                f"energy_per_displacement is required but currently set to {energy_per_displacement}"
+            )
+
+    # per_displacement
+    displacement_diff = check_for_dimentionality_difference(
+        tally_result.units, required_units, "[displacements]"
+    )
+    if displacement_diff == -1:
+        print("energy per displacement_diff scaling needed (eV)")
+        if energy_per_displacement:
+            energy_per_displacement = energy_per_displacement * ureg.electron_volt / ureg["displacements"]
             tally_result = tally_result / energy_per_displacement
         else:
             raise ValueError(
@@ -409,9 +423,16 @@ def scale_tally(
             volume_with_units = volume * ureg["centimeter ** 3"]
         else:
             # volume required but not provided so it is found from the mesh
-            volume_with_units = (
-                compute_volume_of_voxels(tally) * ureg["centimeter ** 3"]
-            )
+            volume_from_mesh = compute_volume_of_voxels(tally)
+
+            if volume_from_mesh:
+                volume_with_units = volume_from_mesh * ureg["centimeter ** 3"]
+            else:
+                msg = (f'A length dimentionality difference of {length_diff} '
+                       f'was detected. However volume is set to {volume} and '
+                       'volume could not be calculated from the mesh. Please '
+                       'specify the volume argument')
+                raise ValueError(msg)
 
         if length_diff == 3:
             print("dividing by volume")
@@ -446,8 +467,9 @@ def scale_tally(
 
 
 def compute_volume_of_voxels(tally):
-    tally_filter = tally.find_filter(filter_type=openmc.MeshFilter)
-    if tally_filter:
+    if tally.contains_filter(openmc.MeshFilter):
+        tally_filter = tally.find_filter(filter_type=openmc.MeshFilter)
+
         mesh = tally_filter.mesh
         x = abs(mesh.lower_left[0] - mesh.upper_right[0]) / mesh.dimension[0]
         y = abs(mesh.lower_left[1] - mesh.upper_right[1]) / mesh.dimension[1]
@@ -455,7 +477,8 @@ def compute_volume_of_voxels(tally):
         volume = x * y * z
         return volume
     else:
-        raise ValueError(f"volume could not be obtained from tally {tally}")
+        print(f"volume of mesh element could not be obtained from tally {tally}")
+        return False
 
 
 def find_fusion_energy_per_reaction(reactants: str) -> float:
