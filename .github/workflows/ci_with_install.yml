@@ -27,9 +27,7 @@ jobs:
 
       - name: install package
         run: |
-          conda update
           conda install -c conda-forge openmc
-          # conda install -c cadquery -c conda-forge cadquery=2.1
           python setup.py install
 
       - name: install packages for tests
