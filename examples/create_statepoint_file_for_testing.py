@@ -5,7 +5,15 @@ import openmc
 import openmc_dagmc_wrapper as odw
 import openmc_plasma_source as ops
 import openmc_data_downloader as odd
+import argparse
 
+parser = argparse.ArgumentParser()
+
+parser.add_argument("-b", "--batches", type=int, default=2, help="number of batches")
+parser.add_argument(
+    "-p", "--particles", type=int, default=1000000, help="number of particles"
+)
+args = parser.parse_args()
 
 # MATERIALS
 breeder_material = openmc.Material(1, "PbLi")  # Pb84.2Li15.8
@@ -22,7 +30,7 @@ breeder_material.set_density("atom/b-cm", 3.2720171e-2)  # around 11 g/cm3
 
 iron = openmc.Material(name="iron")
 iron.set_density("g/cm3", 7.75)
-iron.add_element("Fe", 0.95, percent_type="wo")
+iron.add_element("Pb", 0.95, percent_type="wo")
 
 materials = openmc.Materials([breeder_material, iron])
 
@@ -158,9 +166,10 @@ tallies = openmc.Tallies(
     ]
 )
 
+
 settings = odw.FusionSettings()
-settings.batches = 1
-settings.particles = 1000000
+settings.batches = args.batches
+settings.particles = args.particles
 # assigns a ring source of DT energy neutrons to the source using the
 # openmc_plasma_source package
 settings.source = ops.FusionPointSource()
