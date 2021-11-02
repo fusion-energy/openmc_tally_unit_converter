@@ -9,6 +9,105 @@ ureg = pint.UnitRegistry()
 ureg.load_definitions(str(Path(__file__).parent / "neutronics_units.txt"))
 
 
+def process_damage_energy_tally(
+    tally,
+    required_units: str = "eV / simulated_particle",
+    source_strength: float = None,
+    volume: float = None,
+    energy_per_displacement: float = None,
+    recombination_fraction: float = 0,
+    material: float = None,
+):
+    """Processes a damage-energy tally converting the tally with default units
+    obtained during simulation into the user specified units. Can be processed
+    to obtain damage per atom (DPA)
+
+    Args:
+        tally: The openmc.Tally object which should be a spectra tally. With a
+            score of flux or current and an EnergyFunctionFilter
+        required_units: The units to convert the energy and tally into
+        source_strength: In some cases the source_strength will be required
+            to convert the base units into the required units. This optional
+            argument allows the user to specify the source_strength when needed
+        volume: In some cases the volume will be required to convert the base
+            units into the required units. In the case of a regular mesh the
+            volume is automatically found. This optional argument allows the
+            user to specify the volume when needed or overwrite the
+            automatically calculated volume. When finding DPA volume is needed
+            along with the material to find number of atoms.
+        energy_per_displacement: the energy required to displace an atom. The
+            total damage-energy depositied is divided by this value to get
+            number of atoms displaced. Assumed units are eV
+
+    Returns:
+        The dpa tally result in the required units
+    """
+
+    if check_for_energy_function_filter(tally):
+        raise ValueError("EnergyFunctionFilter found in a damage-energy tally")
+
+    # checks for user provided base units
+    base_units = get_tally_units(tally)
+
+    data_frame = tally.get_pandas_dataframe()
+
+    print(f"tally {tally.name} base units {base_units}")
+
+    tally_result = np.array(data_frame["mean"])
+
+    if recombination_fraction:
+        if recombination_fraction < 0:
+            raise ValueError(
+                f"recombination_fraction can't be smaller than 1. recombination_fraction is {recombination_fraction}"
+            )
+        if recombination_fraction > 1:
+            raise ValueError(
+                f"recombination_fraction can't be larger than 1. recombination_fraction is {recombination_fraction}"
+            )
+
+        tally_result = tally_result * (1.0 - recombination_fraction)
+
+    tally_result = tally_result * base_units
+
+    if material:
+        atomic_mass_in_g = material.average_molar_mass * 1.66054e-24
+        density_in_g_per_cm3 = material.get_mass_density()
+        number_of_atoms_per_cm3 = density_in_g_per_cm3 / atomic_mass_in_g
+    else:
+        number_of_atoms_per_cm3 = None
+    print("number_of_atoms_per_cm3", number_of_atoms_per_cm3)
+
+    scaled_tally_result = scale_tally(
+        tally,
+        tally_result,
+        ureg[required_units],
+        source_strength,
+        volume,
+        number_of_atoms_per_cm3,
+        energy_per_displacement,
+    )
+
+    tally_in_required_units = scaled_tally_result.to(required_units)
+
+    if "std. dev." in data_frame.columns.to_list():
+        tally_std_dev_base = np.array(data_frame["std. dev."]) * base_units
+        scaled_tally_std_dev = scale_tally(
+            tally,
+            tally_std_dev_base,
+            ureg[required_units],
+            source_strength,
+            volume,
+            number_of_atoms_per_cm3,
+            energy_per_displacement,
+        )
+        # if recombination_fraction:
+        #     scaled_tally_std_dev = scaled_tally_std_dev * recombination_fraction
+        tally_std_dev_in_required_units = scaled_tally_std_dev.to(required_units)
+        return tally_in_required_units, tally_std_dev_in_required_units
+    else:
+        return tally_in_required_units
+
+
 def process_spectra_tally(
     tally,
     required_units: str = "centimeters / simulated_particle",
@@ -58,7 +157,6 @@ def process_spectra_tally(
     scaled_tally_result = scale_tally(
         tally,
         tally_base,
-        base_units,
         ureg[required_units],
         source_strength,
         volume,
@@ -70,7 +168,6 @@ def process_spectra_tally(
         scaled_tally_std_dev = scale_tally(
             tally,
             tally_std_dev_base,
-            base_units,
             ureg[required_units],
             source_strength,
             volume,
@@ -121,6 +218,11 @@ def process_dose_tally(
     base_units = get_tally_units(tally)
     base_units = ureg.picosievert * ureg.centimeter * base_units
 
+    # dose coefficients have pico sievert cm **2
+    # flux has cm2 / simulated_particle units
+    # dose on a surface uses a current score (units of per simulated_particle) and is therefore * area to get pSv / source particle
+    # dose on a volume uses a flux score (units of cm2 per simulated particle) and therefore gives pSv cm**4 / simulated particle
+
     data_frame = tally.get_pandas_dataframe()
 
     print(f"tally {tally.name} base units {base_units}")
@@ -130,7 +232,6 @@ def process_dose_tally(
     scaled_tally_result = scale_tally(
         tally,
         tally_result,
-        base_units,
         ureg[required_units],
         source_strength,
         volume,
@@ -142,7 +243,6 @@ def process_dose_tally(
         scaled_tally_std_dev = scale_tally(
             tally,
             tally_std_dev_base,
-            base_units,
             ureg[required_units],
             source_strength,
             volume,
@@ -202,7 +302,6 @@ def process_tally(
     scaled_tally_result = scale_tally(
         tally,
         tally_result,
-        base_units,
         ureg[required_units],
         source_strength,
         volume,
@@ -214,7 +313,6 @@ def process_tally(
         scaled_tally_std_dev = scale_tally(
             tally,
             tally_std_dev_base,
-            base_units,
             ureg[required_units],
             source_strength,
             volume,
@@ -231,13 +329,47 @@ def process_tally(
 def scale_tally(
     tally,
     tally_result,
-    base_units,
-    required_units,
+    required_units: str,
     source_strength: float,
     volume: float,
+    atoms: float = None,
+    energy_per_displacement: float = None,
 ):
+
+    # energy_per_displacement
     time_diff = check_for_dimentionality_difference(
-        base_units, required_units, "[time]"
+        tally_result.units, required_units, "[time]"
+    )
+    length_diff = check_for_dimentionality_difference(
+        tally_result.units, required_units, "[length]"
+    )
+    mass_diff = check_for_dimentionality_difference(
+        tally_result.units, required_units, "[mass]"
+    )
+    displacement_diff = check_for_dimentionality_difference(
+        tally_result.units, required_units, "[displacement]"
+    )
+
+    if (
+        time_diff == -2
+        and mass_diff == 1
+        and length_diff == 2
+        and displacement_diff == -1
+    ):
+
+        print("energy per displacement_diff scaling needed (eV)")
+        if energy_per_displacement:
+            energy_per_displacement = (
+                energy_per_displacement * ureg.electron_volt / ureg["displacement"]
+            )
+            tally_result = tally_result / energy_per_displacement
+        else:
+            raise ValueError(
+                f"energy_per_displacement is required but currently set to {energy_per_displacement}"
+            )
+
+    time_diff = check_for_dimentionality_difference(
+        tally_result.units, required_units, "[time]"
     )
     if time_diff != 0:
         print("time scaling needed (seconds)")
@@ -253,7 +385,7 @@ def scale_tally(
             )
 
     time_diff = check_for_dimentionality_difference(
-        base_units, required_units, "[pulse]"
+        tally_result.units, required_units, "[pulse]"
     )
     if time_diff != 0:
         print("time scaling needed (pulse)")
@@ -261,7 +393,7 @@ def scale_tally(
             source_strength = source_strength * ureg["1 / pulse"]
             if time_diff == -1:
                 tally_result = tally_result / source_strength
-            if time_diff == 1:
+            elif time_diff == 1:
                 tally_result = tally_result * source_strength
         else:
             raise ValueError(
@@ -269,23 +401,47 @@ def scale_tally(
             )
 
     length_diff = check_for_dimentionality_difference(
-        base_units, required_units, "[length]"
+        tally_result.units, required_units, "[length]"
     )
     if length_diff != 0:
         print("length scaling needed")
         if volume:
-            volume = volume * ureg["centimeter ** 3"]
+            volume_with_units = volume * ureg["centimeter ** 3"]
         else:
             # volume required but not provided so it is found from the mesh
-            volume = compute_volume_of_voxels(tally) * ureg["centimeter ** 3"]
+            volume_with_units = (
+                compute_volume_of_voxels(tally) * ureg["centimeter ** 3"]
+            )
 
         if length_diff == 3:
             print("dividing by volume")
-            tally_result = tally_result / volume
-        if length_diff == -3:
+            tally_result = tally_result / volume_with_units
+        elif length_diff == -3:
             print("multiplying by volume")
-            tally_result = tally_result * volume
+            tally_result = tally_result * volume_with_units
 
+    atom_diff = check_for_dimentionality_difference(
+        tally_result.units, required_units, "[atom]"
+    )
+    if atom_diff != 0:
+        print("atom scaling needed")
+        if atoms:
+            atoms = atoms * ureg["atom"]
+
+            if atom_diff == 1:
+                print("dividing by atom")
+                tally_result = tally_result / atoms
+            elif atom_diff == -1:
+                print("multiplying by atom")
+                tally_result = tally_result * atoms
+
+        else:
+            msg = (
+                f"atoms is required but currently set to {atoms}. Atoms "
+                "can be calculated automatically from material and volume "
+                "inputs"
+            )
+            raise ValueError(msg)
     return tally_result
 
 
@@ -365,30 +521,6 @@ def get_cell_ids_from_tally_filters(tally):
     return cell_ids
 
 
-# def get_tally_units_dose(tally):
-
-#     # An EnergyFunctionFilter is exspeted in dose tallies
-#     units = get_tally_units(tally)
-
-#     units = [ureg.picosievert * ureg.centimeter * units[0]]
-
-#     # check it is a dose tally by looking for a openmc.filter.EnergyFunctionFilter
-#     for filter in tally.filters:
-#         if isinstance(filter, openmc.filter.EnergyFunctionFilter):
-#             print("filter is EnergyFunctionFilter")
-#             # effective_dose
-#             # dose coefficients have pico sievert cm **2
-#             # flux has cm2 / simulated_particle units
-#             # dose on a surface uses a current score (units of per simulated_particle) and is therefore * area to get pSv / source particle
-#             # dose on a volume uses a flux score (units of cm2 per simulated particle) and therefore gives pSv cm**4 / simulated particle
-
-#             return units
-
-#     raise ValueError(
-#         "units for dose tally can't be found, an EnergyFunctionFilter was not present"
-#     )
-
-
 def check_for_energy_filter(tally):
 
     # check it is a spectra tally by looking for a openmc.filter.EnergyFilter
@@ -397,10 +529,6 @@ def check_for_energy_filter(tally):
             # spectra tally has units for the energy as well as the flux
             return True
     return False
-
-    # raise ValueError(
-    #     "units for spectra tally can't be found, an EnergyFilter was not present"
-    # )
 
 
 def check_for_energy_function_filter(tally):
@@ -445,6 +573,6 @@ def get_tally_units(tally):
 
 
 def check_for_dimentionality_difference(units_1, units_2, unit_to_compare):
-    units_1_time_power = units_1.dimensionality.get(unit_to_compare)
-    units_2_time_power = units_2.dimensionality.get(unit_to_compare)
-    return units_1_time_power - units_2_time_power
+    units_1_dimentions = units_1.dimensionality.get(unit_to_compare)
+    units_2_dimentions = units_2.dimensionality.get(unit_to_compare)
+    return units_1_dimentions - units_2_dimentions
