@@ -10,8 +10,7 @@ my_tally = statepoint.get_tally(name="2_damage-energy")
 
 # returns the tally with base units
 result = opp.process_damage_energy_tally(
-    tally=my_tally,
-    required_units='eV / simulated_particle'
+    tally=my_tally, required_units="eV / simulated_particle"
 )
 print(f"damage-energy base units = {result}", end="\n\n")
 
@@ -53,7 +52,7 @@ result, std_dev = opp.process_damage_energy_tally(
     volume=5,
     material=my_mat,
     energy_per_displacement=10,
-    recombination_fraction=0.1
+    recombination_fraction=0.1,
 )
 print(f"damage-energy = {result}", end="\n\n")
 
