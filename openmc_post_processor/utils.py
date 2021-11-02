@@ -570,8 +570,6 @@ def get_tally_units(tally):
 
 
 def check_for_dimentionality_difference(units_1, units_2, unit_to_compare):
-    # print('comparing ', units_1)
-    # print('comparing ', units_2)
     units_1_dimentions = units_1.dimensionality.get(unit_to_compare)
     units_2_dimentions = units_2.dimensionality.get(unit_to_compare)
     return units_1_dimentions - units_2_dimentions
