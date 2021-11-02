@@ -285,9 +285,8 @@ def process_tally(
             "EnergyFunctionFilter are not known to OpenMC. Therefore "
             "the units of this tally can not be found. If you have "
             "applied dose coefficients to an EnergyFunctionFilter "
-            "the units of these are known and yo can use the "
-            "get_tally_units_dose function instead of the "
-            "get_tally_units"
+            "the units of these are known and you can use the "
+            "process_dose_tally function instead of the process_tally"
         )
         raise ValueError(msg)
 
