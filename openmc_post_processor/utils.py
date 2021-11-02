@@ -375,7 +375,9 @@ def scale_tally(
     if displacement_diff == -1:
         print("energy per displacement_diff scaling needed (eV)")
         if energy_per_displacement:
-            energy_per_displacement = energy_per_displacement * ureg.electron_volt / ureg["displacements"]
+            energy_per_displacement = (
+                energy_per_displacement * ureg.electron_volt / ureg["displacements"]
+            )
             tally_result = tally_result / energy_per_displacement
         else:
             raise ValueError(
@@ -428,10 +430,12 @@ def scale_tally(
             if volume_from_mesh:
                 volume_with_units = volume_from_mesh * ureg["centimeter ** 3"]
             else:
-                msg = (f'A length dimentionality difference of {length_diff} '
-                       f'was detected. However volume is set to {volume} and '
-                       'volume could not be calculated from the mesh. Please '
-                       'specify the volume argument')
+                msg = (
+                    f"A length dimentionality difference of {length_diff} "
+                    f"was detected. However volume is set to {volume} and "
+                    "volume could not be calculated from the mesh. Please "
+                    "specify the volume argument"
+                )
                 raise ValueError(msg)
 
         if length_diff == 3:
