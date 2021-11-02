@@ -9,10 +9,10 @@ import argparse
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument('-b', '--batches', type=int, default=2,
-                    help='number of batches')
-parser.add_argument('-p', '--particles', type=int, default=1000000,
-                    help='number of particles')
+parser.add_argument("-b", "--batches", type=int, default=2, help="number of batches")
+parser.add_argument(
+    "-p", "--particles", type=int, default=1000000, help="number of particles"
+)
 args = parser.parse_args()
 
 # MATERIALS
