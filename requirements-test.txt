@@ -2,3 +2,4 @@ openmc_data_downloader
 openmc_dagmc_wrapper
 openmc_plasma_source
 pytest-cov>=2.12.1
+spectrum_plotter
