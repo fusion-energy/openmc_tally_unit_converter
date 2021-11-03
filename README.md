@@ -17,12 +17,22 @@ Additional inputs can be applied to normalize the the tallies. by the source str
 
 Scaling by the volume of the cell or mesh is also possible by ```volume``` and requesting  units that require normalizing with volume. Follow on from the previous example with would allow conversion of heating tallies in their base units of electron volts per source particle to be converted to Watts per cm3.
 
-| Tally type | Filters present | Scores present | Base units | Required units | function | Additional args |
-|---|---|---|---|---|---|---|
-| dpa | Cell or mesh | damage-energy | eV per simulated particle | MeV per simulated particle | process_tally |  |
-|  |  |  |  | Joules per simulated particle | process_tally |  |
-|  |  |  |  | Joules per second |  | source_strength |
-|  |  |  |  |  |  |  |
-|  |  |  |  |  |  |  |
+| Tally type | Filters present | Scores present | Base units |
+|---|---|---|---|
+| heating | CellFilter | heating | eV / source particle |
+| spectra | CellFilter EnergyFilter ParticleFilter (neutron) | flux | neutron-cm / source particle |
+| fast flux | CellFilter EnergyFilter ParticleFilter (neutron) | flux | neutron-cm / source particle |
+| Tritium Breeding Ratio | CellFilter | (n,Xt) | (n,Xt) reaction rate / source particle |
+| damage-energy | CellFilter | damage-energy | eV per source particle |
+| effective dose | CellFilter EnergyFunctionFilter ParticleFilter (neutron) | flux | Picosievert / source particle |
+
+| Tally type | Requested units | Function to use | Additional arguments |
+|---|---|---|---|
+| heating | MeV / source particle | process_tally |  |
+| heating | Joules / source particle | process_tally |  |
+| heating | Watts / source particle | process_tally | source_strength |
+| heating | Watts | process_tally | source_strength |
+|  | Jou |  |  |
+|  |  |  |  |
 
 :point_right: [Examples](https://github.com/fusion-energy/openmc_post_processor/tree/main/examples)
