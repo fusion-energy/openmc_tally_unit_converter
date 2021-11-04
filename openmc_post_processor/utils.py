@@ -51,7 +51,7 @@ def process_damage_energy_tally(
 
     data_frame = tally.get_pandas_dataframe()
 
-    print(f"tally {tally.name} base units {base_units}")
+    # print(f"tally {tally.name} base units {base_units}")
 
     tally_result = np.array(data_frame["mean"])
 
@@ -75,7 +75,7 @@ def process_damage_energy_tally(
         number_of_atoms_per_cm3 = density_in_g_per_cm3 / atomic_mass_in_g
     else:
         number_of_atoms_per_cm3 = None
-    print("number_of_atoms_per_cm3", number_of_atoms_per_cm3)
+    # print("number_of_atoms_per_cm3", number_of_atoms_per_cm3)
 
     scaled_tally_result = scale_tally(
         tally,
@@ -146,7 +146,7 @@ def process_spectra_tally(
 
     # checks for user provided base units
     base_units = get_tally_units(tally)
-    print(f"tally {tally.name} base units {base_units}")
+    # print(f"tally {tally.name} base units {base_units}")
 
     # numpy array is needed as a pandas series can't have units
 
@@ -225,7 +225,7 @@ def process_dose_tally(
 
     data_frame = tally.get_pandas_dataframe()
 
-    print(f"tally {tally.name} base units {base_units}")
+    # print(f"tally {tally.name} base units {base_units}")
 
     tally_result = np.array(data_frame["mean"]) * base_units
 
@@ -294,7 +294,7 @@ def process_tally(
 
     base_units = get_tally_units(tally)
 
-    print(f"tally {tally.name} base units {base_units}")
+    # print(f"tally {tally.name} base units {base_units}")
 
     tally_result = np.array(data_frame["mean"]) * base_units
 
@@ -356,7 +356,7 @@ def scale_tally(
         and displacement_diff == -1
     ):
 
-        print("energy per displacement_diff scaling needed (eV)")
+        # print("energy per displacement_diff scaling needed (eV)")
         if energy_per_displacement:
             energy_per_displacement = (
                 energy_per_displacement * ureg.electron_volt / ureg["displacements"]
@@ -372,7 +372,7 @@ def scale_tally(
         tally_result.units, required_units, "[displacements]"
     )
     if displacement_diff == -1:
-        print("energy per displacement_diff scaling needed (eV)")
+        # print("energy per displacement_diff scaling needed (eV)")
         if energy_per_displacement:
             energy_per_displacement = (
                 energy_per_displacement * ureg.electron_volt / ureg["displacements"]
@@ -387,7 +387,7 @@ def scale_tally(
         tally_result.units, required_units, "[time]"
     )
     if time_diff != 0:
-        print("time scaling needed (seconds)")
+        # print("time scaling needed (seconds)")
         if source_strength:
             source_strength = source_strength * ureg["1 / second"]
             if time_diff == -1:
@@ -403,7 +403,7 @@ def scale_tally(
         tally_result.units, required_units, "[pulse]"
     )
     if time_diff != 0:
-        print("time scaling needed (pulse)")
+        # print("time scaling needed (pulse)")
         if source_strength:
             source_strength = source_strength * ureg["1 / pulse"]
             if time_diff == -1:
@@ -419,7 +419,7 @@ def scale_tally(
         tally_result.units, required_units, "[length]"
     )
     if length_diff != 0:
-        print("length scaling needed")
+        # print("length scaling needed")
         if volume:
             volume_with_units = volume * ureg["centimeter ** 3"]
         else:
@@ -438,25 +438,25 @@ def scale_tally(
                 raise ValueError(msg)
 
         if length_diff == 3:
-            print("dividing by volume")
+            # print("dividing by volume")
             tally_result = tally_result / volume_with_units
         elif length_diff == -3:
-            print("multiplying by volume")
+            # print("multiplying by volume")
             tally_result = tally_result * volume_with_units
 
     atom_diff = check_for_dimentionality_difference(
         tally_result.units, required_units, "[atom]"
     )
     if atom_diff != 0:
-        print("atom scaling needed")
+        # print("atom scaling needed")
         if atoms:
             atoms = atoms * ureg["atom"]
 
             if atom_diff == 1:
-                print("dividing by atom")
+                # print("dividing by atom")
                 tally_result = tally_result / atoms
             elif atom_diff == -1:
-                print("multiplying by atom")
+                # print("multiplying by atom")
                 tally_result = tally_result * atoms
 
         else:
@@ -573,7 +573,7 @@ def get_tally_units(tally):
         units = units / (ureg.simulated_particle * ureg.centimeter ** 2)
 
     if tally.scores == ["flux"]:
-        print("score is flux")
+        # print("score is flux")
         # tally has units of particle-cm2 per simulated_particle
         # https://openmc.discourse.group/t/normalizing-tally-to-get-flux-value/99/4
         units = get_particles_from_tally_filters(tally, ureg)
