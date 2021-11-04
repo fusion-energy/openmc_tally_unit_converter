@@ -3,6 +3,7 @@ from typing import Tuple
 
 import numpy as np
 import openmc
+import pandas as pd
 import pint
 
 ureg = pint.UnitRegistry()
@@ -89,7 +90,7 @@ def process_damage_energy_tally(
 
     tally_in_required_units = scaled_tally_result.to(required_units)
 
-    if "std. dev." in data_frame.columns.to_list():
+    if "std. dev." in get_data_frame_columns(data_frame):
         tally_std_dev_base = np.array(data_frame["std. dev."]) * base_units
         scaled_tally_std_dev = scale_tally(
             tally,
@@ -163,7 +164,7 @@ def process_spectra_tally(
     )
     tally_in_required_units = scaled_tally_result.to(required_units)
 
-    if "std. dev." in data_frame.columns.to_list():
+    if "std. dev." in get_data_frame_columns(data_frame):
         tally_std_dev_base = np.array(data_frame["std. dev."]) * base_units
         scaled_tally_std_dev = scale_tally(
             tally,
@@ -238,7 +239,7 @@ def process_dose_tally(
     )
     tally_in_required_units = scaled_tally_result.to(required_units)
 
-    if "std. dev." in data_frame.columns.to_list():
+    if "std. dev." in get_data_frame_columns(data_frame):
         tally_std_dev_base = np.array(data_frame["std. dev."]) * base_units
         scaled_tally_std_dev = scale_tally(
             tally,
@@ -307,7 +308,7 @@ def process_tally(
     )
     tally_in_required_units = scaled_tally_result.to(required_units)
 
-    if "std. dev." in data_frame.columns.to_list():
+    if "std. dev." in get_data_frame_columns(data_frame):
         tally_std_dev_base = np.array(data_frame["std. dev."]) * base_units
         scaled_tally_std_dev = scale_tally(
             tally,
@@ -602,3 +603,11 @@ def check_for_dimentionality_difference(units_1, units_2, unit_to_compare):
     units_1_dimentions = units_1.dimensionality.get(unit_to_compare)
     units_2_dimentions = units_2.dimensionality.get(unit_to_compare)
     return units_1_dimentions - units_2_dimentions
+
+
+def get_data_frame_columns(data_frame):
+    if isinstance(data_frame.columns, pd.MultiIndex):
+        data_frame_columns = data_frame.columns.get_level_values(0).to_list()
+    else:
+        data_frame_columns = data_frame.columns.to_list()
+    return data_frame_columns
