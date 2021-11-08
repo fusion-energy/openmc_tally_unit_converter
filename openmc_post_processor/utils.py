@@ -570,9 +570,9 @@ def get_tally_units(tally):
 
     if tally.scores == ["current"]:
         units = get_particles_from_tally_filters(tally, ureg)
-        units = units / (ureg.simulated_particle * ureg.centimeter ** 2)
+        units = units / (ureg.simulated_particle)
 
-    if tally.scores == ["flux"]:
+    elif tally.scores == ["flux"]:
         print("score is flux")
         # tally has units of particle-cm2 per simulated_particle
         # https://openmc.discourse.group/t/normalizing-tally-to-get-flux-value/99/4
