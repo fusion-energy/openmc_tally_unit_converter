@@ -20,16 +20,13 @@ jobs:
   testing:
     runs-on: ubuntu-latest
     container:
-      image: continuumio/miniconda3:4.9.2
+      image: openmc/openmc:latest-dagmc
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
 
       - name: install package
         run: |
-          conda install -c conda-forge h5py=3.2.1
-          conda install -c conda-forge moab
-          conda install -c conda-forge openmc
           python setup.py install
 
       - name: install packages for tests
