@@ -3,6 +3,7 @@ from typing import Tuple
 
 import numpy as np
 import openmc
+import pandas as pd
 import pint
 
 ureg = pint.UnitRegistry()
@@ -51,7 +52,7 @@ def process_damage_energy_tally(
 
     data_frame = tally.get_pandas_dataframe()
 
-    print(f"tally {tally.name} base units {base_units}")
+    # print(f"tally {tally.name} base units {base_units}")
 
     tally_result = np.array(data_frame["mean"])
 
@@ -75,7 +76,7 @@ def process_damage_energy_tally(
         number_of_atoms_per_cm3 = density_in_g_per_cm3 / atomic_mass_in_g
     else:
         number_of_atoms_per_cm3 = None
-    print("number_of_atoms_per_cm3", number_of_atoms_per_cm3)
+    # print("number_of_atoms_per_cm3", number_of_atoms_per_cm3)
 
     scaled_tally_result = scale_tally(
         tally,
@@ -89,7 +90,7 @@ def process_damage_energy_tally(
 
     tally_in_required_units = scaled_tally_result.to(required_units)
 
-    if "std. dev." in data_frame.columns.to_list():
+    if "std. dev." in get_data_frame_columns(data_frame):
         tally_std_dev_base = np.array(data_frame["std. dev."]) * base_units
         scaled_tally_std_dev = scale_tally(
             tally,
@@ -146,7 +147,7 @@ def process_spectra_tally(
 
     # checks for user provided base units
     base_units = get_tally_units(tally)
-    print(f"tally {tally.name} base units {base_units}")
+    # print(f"tally {tally.name} base units {base_units}")
 
     # numpy array is needed as a pandas series can't have units
 
@@ -163,7 +164,7 @@ def process_spectra_tally(
     )
     tally_in_required_units = scaled_tally_result.to(required_units)
 
-    if "std. dev." in data_frame.columns.to_list():
+    if "std. dev." in get_data_frame_columns(data_frame):
         tally_std_dev_base = np.array(data_frame["std. dev."]) * base_units
         scaled_tally_std_dev = scale_tally(
             tally,
@@ -225,7 +226,7 @@ def process_dose_tally(
 
     data_frame = tally.get_pandas_dataframe()
 
-    print(f"tally {tally.name} base units {base_units}")
+    # print(f"tally {tally.name} base units {base_units}")
 
     tally_result = np.array(data_frame["mean"]) * base_units
 
@@ -238,7 +239,7 @@ def process_dose_tally(
     )
     tally_in_required_units = scaled_tally_result.to(required_units)
 
-    if "std. dev." in data_frame.columns.to_list():
+    if "std. dev." in get_data_frame_columns(data_frame):
         tally_std_dev_base = np.array(data_frame["std. dev."]) * base_units
         scaled_tally_std_dev = scale_tally(
             tally,
@@ -294,7 +295,7 @@ def process_tally(
 
     base_units = get_tally_units(tally)
 
-    print(f"tally {tally.name} base units {base_units}")
+    # print(f"tally {tally.name} base units {base_units}")
 
     tally_result = np.array(data_frame["mean"]) * base_units
 
@@ -307,7 +308,7 @@ def process_tally(
     )
     tally_in_required_units = scaled_tally_result.to(required_units)
 
-    if "std. dev." in data_frame.columns.to_list():
+    if "std. dev." in get_data_frame_columns(data_frame):
         tally_std_dev_base = np.array(data_frame["std. dev."]) * base_units
         scaled_tally_std_dev = scale_tally(
             tally,
@@ -356,7 +357,7 @@ def scale_tally(
         and displacement_diff == -1
     ):
 
-        print("energy per displacement_diff scaling needed (eV)")
+        # print("energy per displacement_diff scaling needed (eV)")
         if energy_per_displacement:
             energy_per_displacement = (
                 energy_per_displacement * ureg.electron_volt / ureg["displacements"]
@@ -372,7 +373,7 @@ def scale_tally(
         tally_result.units, required_units, "[displacements]"
     )
     if displacement_diff == -1:
-        print("energy per displacement_diff scaling needed (eV)")
+        # print("energy per displacement_diff scaling needed (eV)")
         if energy_per_displacement:
             energy_per_displacement = (
                 energy_per_displacement * ureg.electron_volt / ureg["displacements"]
@@ -387,7 +388,7 @@ def scale_tally(
         tally_result.units, required_units, "[time]"
     )
     if time_diff != 0:
-        print("time scaling needed (seconds)")
+        # print("time scaling needed (seconds)")
         if source_strength:
             source_strength = source_strength * ureg["1 / second"]
             if time_diff == -1:
@@ -403,7 +404,7 @@ def scale_tally(
         tally_result.units, required_units, "[pulse]"
     )
     if time_diff != 0:
-        print("time scaling needed (pulse)")
+        # print("time scaling needed (pulse)")
         if source_strength:
             source_strength = source_strength * ureg["1 / pulse"]
             if time_diff == -1:
@@ -419,7 +420,7 @@ def scale_tally(
         tally_result.units, required_units, "[length]"
     )
     if length_diff != 0:
-        print("length scaling needed")
+        # print("length scaling needed")
         if volume:
             volume_with_units = volume * ureg["centimeter ** 3"]
         else:
@@ -438,25 +439,25 @@ def scale_tally(
                 raise ValueError(msg)
 
         if length_diff == 3:
-            print("dividing by volume")
+            # print("dividing by volume")
             tally_result = tally_result / volume_with_units
         elif length_diff == -3:
-            print("multiplying by volume")
+            # print("multiplying by volume")
             tally_result = tally_result * volume_with_units
 
     atom_diff = check_for_dimentionality_difference(
         tally_result.units, required_units, "[atom]"
     )
     if atom_diff != 0:
-        print("atom scaling needed")
+        # print("atom scaling needed")
         if atoms:
             atoms = atoms * ureg["atom"]
 
             if atom_diff == 1:
-                print("dividing by atom")
+                # print("dividing by atom")
                 tally_result = tally_result / atoms
             elif atom_diff == -1:
-                print("multiplying by atom")
+                # print("multiplying by atom")
                 tally_result = tally_result * atoms
 
         else:
@@ -602,3 +603,11 @@ def check_for_dimentionality_difference(units_1, units_2, unit_to_compare):
     units_1_dimentions = units_1.dimensionality.get(unit_to_compare)
     units_2_dimentions = units_2.dimensionality.get(unit_to_compare)
     return units_1_dimentions - units_2_dimentions
+
+
+def get_data_frame_columns(data_frame):
+    if isinstance(data_frame.columns, pd.MultiIndex):
+        data_frame_columns = data_frame.columns.get_level_values(0).to_list()
+    else:
+        data_frame_columns = data_frame.columns.to_list()
+    return data_frame_columns
