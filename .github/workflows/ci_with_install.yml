@@ -50,6 +50,8 @@ jobs:
           python processing_cell_heating_tally.py
           python processing_cell_spectra_tally.py
           python processing_mutliple_cell_spectra_tally.py
+          python processing_2d_mesh_heating_tally.py
+          python processing_3d_mesh_heating_tally.py
 
       - name: Upload to codecov
         uses: codecov/codecov-action@v2

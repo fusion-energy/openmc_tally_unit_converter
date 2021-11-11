@@ -140,9 +140,22 @@ tally15 = odw.MeshTally2D(
 )
 
 tally16 = odw.MeshTally3D(
-    mesh_resolution=(100, 100, 100),
+    mesh_resolution=(6, 6, 6),
     bounding_box=[(-100, -100, 0), (100, 100, 1)],
     tally_type="neutron_effective_dose",
+)
+
+tally17 = odw.MeshTally2D(
+    tally_type="heating",
+    plane="xy",
+    mesh_resolution=(10, 5),
+    bounding_box=[(-100, -100, 0), (100, 100, 1)],
+)
+
+tally18 = odw.MeshTally3D(
+    mesh_resolution=(5, 6, 7),
+    bounding_box=[(-100, -100, 0), (100, 100, 1)],
+    tally_type="heating",
 )
 
 tallies = openmc.Tallies(
@@ -163,6 +176,8 @@ tallies = openmc.Tallies(
         tally14,
         tally15,
         tally16,
+        tally17,
+        tally18,
     ]
 )
 
