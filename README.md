@@ -22,8 +22,8 @@ statepoint = openmc.StatePoint(filepath="statepoint.2.h5")
 my_tally = statepoint.get_tally(name="my_cell_heating_tally")
 
 # gets the base units of the tally
-base_units = otuc.get_tally_units(my_tally)
-print(base_units)
+tally = otuc.process_tally(tally=my_tally)
+print(tally)
 >>> eV per source_particle
 ```
 
