@@ -6,7 +6,7 @@ with open("README.md", "r") as fh:
 setuptools.setup(
     name="openmc_tally_unit_converter",
     version="develop",
-    author="The openmc post processor Development Team",
+    author="The openmc tally unit converter Development Team",
     author_email="mail@jshimwell.com",
     description="Convert OpenMC tallies into user friendly units",
     long_description=long_description,
