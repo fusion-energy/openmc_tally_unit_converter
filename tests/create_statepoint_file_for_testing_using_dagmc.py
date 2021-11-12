@@ -88,7 +88,7 @@ tally10 = odw.CellTally(
 
 tally11 = odw.CellTally(
     tally_type="neutron_spectra",
-    target=3,
+    target=1,
 )
 
 tally12 = odw.CellTally(
@@ -103,19 +103,19 @@ tally13 = odw.CellTally(
 
 tally14 = odw.CellTally(
     tally_type="damage-energy",
-    target=2,
+    target=1,
 )
 
 tally15 = odw.MeshTally2D(
     tally_type="neutron_effective_dose",
     plane="xy",
     mesh_resolution=(10, 5),
-    bounding_box=[(-100, -100, 0), (100, 100, 1)],
+    bounding_box=[(-500, -500, 0), (500, 500, 1)],
 )
 
 tally16 = odw.MeshTally3D(
-    mesh_resolution=(100, 100, 100),
-    bounding_box=[(-100, -100, 0), (100, 100, 1)],
+    mesh_resolution=(500, 500, 500),
+    bounding_box=[(-500, -500, 0), (500, 500, 1)],
     tally_type="neutron_effective_dose",
 )
 
