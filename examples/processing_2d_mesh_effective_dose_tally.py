@@ -8,16 +8,16 @@ my_tally = statepoint.get_tally(name="neutron_effective_dose_on_2D_mesh_xy")
 
 
 # returns the tally with base units
-result = otuc.process_dose_tally(
+tally_result, std_dev_result  = otuc.process_dose_tally(
     tally=my_tally,
 )
-# the tally result with required units
-print(result)
+# the tally result with base units
+print(f'mesh tally results {tally_result}', end='\n\n')
 
 
 # scaled from picosievert to sievert
-result = otuc.process_dose_tally(
-    tally=my_tally, required_units="sievert cm **2 / simulated_particle"
+tally_result, std_dev_result  = otuc.process_dose_tally(
+    tally=my_tally, required_units="sievert / simulated_particle"
 )
 # the tally result with required units
-print(result)
+print(f'converted mesh tally results {tally_result}')
