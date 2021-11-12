@@ -1,6 +1,6 @@
 import unittest
 
-import openmc_post_processor as opp
+import openmc_tally_unit_converter as otuc
 import pytest
 import openmc
 
@@ -13,7 +13,7 @@ class TestUsage(unittest.TestCase):
         self.my_tally = statepoint.get_tally(name="2_flux")
 
     # todo make test for find_source_strength
-    # print(opp.find_source_strength(fusion_energy_per_second_or_per_pulse=1.3e6))
+    # print(otuc.find_source_strength(fusion_energy_per_second_or_per_pulse=1.3e6))
 
 
 if __name__ == "__main__":

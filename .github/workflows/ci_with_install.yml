@@ -37,7 +37,7 @@ jobs:
         run: |
           python tests/create_statepoint_file_for_testing.py --batches 2 --particles 100
           python tests/create_statepoint_file_for_testing.py --batches 1 --particles 100
-          pytest tests/ -v --cov=openmc_post_processor --cov-append --cov-report term --cov-report xml
+          pytest tests/ -v --cov=openmc_tally_unit_converter --cov-append --cov-report term --cov-report xml
 
       - name: Run examples
         run: |

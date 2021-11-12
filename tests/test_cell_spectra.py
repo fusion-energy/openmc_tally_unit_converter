@@ -1,6 +1,6 @@
 import unittest
 
-import openmc_post_processor as opp
+import openmc_tally_unit_converter as otuc
 import pytest
 import openmc
 
@@ -14,7 +14,7 @@ class TestUsage(unittest.TestCase):
 
     def test_cell_tally_spectra_no_processing(self):
         # returns the tally with base units
-        result = opp.process_spectra_tally(
+        result = otuc.process_spectra_tally(
             tally=self.my_tally,
         )
         # units for energy
@@ -24,7 +24,7 @@ class TestUsage(unittest.TestCase):
 
     def test_cell_tally_spectra_pulse_processing(self):
 
-        result = opp.process_spectra_tally(
+        result = otuc.process_spectra_tally(
             tally=self.my_tally,
             required_units="centimeter / pulse",
             required_energy_units="eV",
@@ -36,7 +36,7 @@ class TestUsage(unittest.TestCase):
         assert result[1].units == "centimeter / pulse"
 
     def test_cell_tally_spectra_pulse_processing_and_scaling(self):
-        result = opp.process_spectra_tally(
+        result = otuc.process_spectra_tally(
             tally=self.my_tally,
             required_units="centimeter / pulse",
             required_energy_units="joule",
@@ -48,7 +48,7 @@ class TestUsage(unittest.TestCase):
         assert result[1].units == "centimeter / pulse"
 
     def test_cell_tally_spectra_pulse_processing_and_scaling_2(self):
-        result = opp.process_spectra_tally(
+        result = otuc.process_spectra_tally(
             tally=self.my_tally,
             required_units="centimeter / pulse",
             required_energy_units="megajoule",
@@ -60,7 +60,7 @@ class TestUsage(unittest.TestCase):
         assert result[1].units == "centimeter / pulse"
 
     def test_cell_tally_spectra_pulse_processing_and_scaling_3(self):
-        result = opp.process_spectra_tally(
+        result = otuc.process_spectra_tally(
             tally=self.my_tally,
             required_units="centimeter / pulse",
             required_energy_units="MeV",

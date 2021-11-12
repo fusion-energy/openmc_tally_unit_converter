@@ -1,6 +1,6 @@
 import unittest
 
-import openmc_post_processor as opp
+import openmc_tally_unit_converter as otuc
 import pytest
 import openmc
 
@@ -17,7 +17,7 @@ class TestUsage(unittest.TestCase):
 
     def test_cell_tally_flux_with_no_std_dev(self):
 
-        result = opp.process_tally(
+        result = otuc.process_tally(
             tally=self.my_tally_2,
             required_units="centimeter / simulated_particle",
         )
@@ -27,7 +27,7 @@ class TestUsage(unittest.TestCase):
 
     def test_cell_tally_flux_no_processing(self):
 
-        result = opp.process_tally(
+        result = otuc.process_tally(
             tally=self.my_tally,
             required_units="centimeter / simulated_particle",
         )
@@ -39,7 +39,7 @@ class TestUsage(unittest.TestCase):
     def test_cell_tally_flux_fusion_power_processing(self):
 
         # returns the tally with normalisation per pulse
-        result = opp.process_tally(
+        result = otuc.process_tally(
             source_strength=4.6e17,  # neutrons per 1.3MJ pulse
             tally=self.my_tally,
             required_units="centimeter / pulse",
@@ -51,7 +51,7 @@ class TestUsage(unittest.TestCase):
 
     def test_cell_tally_flux_pulse_processing(self):
 
-        result = opp.process_tally(
+        result = otuc.process_tally(
             source_strength=5,  # neutrons per second 1e9Gw
             tally=self.my_tally,
             required_units="centimeter / second",
@@ -63,7 +63,7 @@ class TestUsage(unittest.TestCase):
 
     def test_cell_tally_flux_pulse_processing_and_scaling(self):
 
-        result = opp.process_tally(
+        result = otuc.process_tally(
             source_strength=5,  # neutrons per 1.3MJ pulse
             tally=self.my_tally,
             required_units="meter / pulse",
@@ -75,7 +75,7 @@ class TestUsage(unittest.TestCase):
 
     def test_cell_tally_flux_volume_processing(self):
 
-        result = opp.process_tally(
+        result = otuc.process_tally(
             volume=100, tally=self.my_tally, required_units="1 / centimeter ** 2"
         )
 
