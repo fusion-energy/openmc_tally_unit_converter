@@ -1,6 +1,6 @@
 import unittest
 
-import openmc_post_processor as opp
+import openmc_tally_unit_converter as otuc
 import pytest
 import openmc
 
@@ -14,7 +14,7 @@ class TestUsage(unittest.TestCase):
 
     def test_cell_tally_heating_no_processing(self):
         # returns the tally with base units
-        result = opp.process_tally(
+        result = otuc.process_tally(
             tally=self.my_tally, required_units="eV / simulated_particle"
         )
 
@@ -27,7 +27,7 @@ class TestUsage(unittest.TestCase):
     def test_cell_tally_heating_fusion_power_processing(self):
 
         # returns the tally with scalled based units (MeV instead of eV)
-        result = opp.process_tally(
+        result = otuc.process_tally(
             source_strength=4.6e17,  # neutrons per 1.3MJ pulse
             tally=self.my_tally,
             required_units="eV / second",
@@ -42,7 +42,7 @@ class TestUsage(unittest.TestCase):
     def test_cell_tally_heating_pulse_processing(self):
 
         # returns the tally with scalled based units (MeV instead of eV)
-        result = opp.process_tally(
+        result = otuc.process_tally(
             source_strength=4.6e17,  # neutrons per 1.3MJ pulse
             tally=self.my_tally,
             required_units="eV / pulse",
@@ -55,7 +55,7 @@ class TestUsage(unittest.TestCase):
     def test_cell_tally_heating_pulse_processing_and_scaling(self):
 
         # returns the tally with scalled based units (MeV instead of eV)
-        result = opp.process_tally(
+        result = otuc.process_tally(
             source_strength=4.6e17,  # neutrons per 1.3MJ pulse
             tally=self.my_tally,
             required_units="MeV / pulse",
@@ -68,7 +68,7 @@ class TestUsage(unittest.TestCase):
     def test_cell_tally_heating_fusion_power_processing_and_scaling(self):
 
         # returns the tally with scalled based units (MeV instead of eV)
-        result = opp.process_tally(
+        result = otuc.process_tally(
             source_strength=4.6e17,  # neutrons per 1.3MJ pulse
             tally=self.my_tally,
             required_units="MeV / second",
@@ -81,7 +81,7 @@ class TestUsage(unittest.TestCase):
     def test_cell_tally_heating_fusion_power_processing_and_conversion(self):
 
         # returns the tally with normalisation per pulse and conversion to joules
-        result = opp.process_tally(
+        result = otuc.process_tally(
             source_strength=1.3e6, tally=self.my_tally, required_units="joule / second"
         )
 
@@ -92,7 +92,7 @@ class TestUsage(unittest.TestCase):
     def test_cell_tally_heating_pulse_processing_and_conversion(self):
 
         # returns the tally with normalisation per pulse and conversion to joules
-        result = opp.process_tally(
+        result = otuc.process_tally(
             source_strength=1.3e6,
             tally=self.my_tally,
             required_units="joules / pulse",  # joules or joule can be requested

@@ -48,11 +48,9 @@ def process_damage_energy_tally(
         raise ValueError("EnergyFunctionFilter found in a damage-energy tally")
 
     # checks for user provided base units
-    base_units = get_tally_units(tally)
+    base_units = get_score_units(tally)
 
     data_frame = tally.get_pandas_dataframe()
-
-    # print(f"tally {tally.name} base units {base_units}")
 
     tally_result = np.array(data_frame["mean"])
 
@@ -76,7 +74,6 @@ def process_damage_energy_tally(
         number_of_atoms_per_cm3 = density_in_g_per_cm3 / atomic_mass_in_g
     else:
         number_of_atoms_per_cm3 = None
-    # print("number_of_atoms_per_cm3", number_of_atoms_per_cm3)
 
     scaled_tally_result = scale_tally(
         tally,
@@ -146,8 +143,7 @@ def process_spectra_tally(
     data_frame = tally.get_pandas_dataframe()
 
     # checks for user provided base units
-    base_units = get_tally_units(tally)
-    # print(f"tally {tally.name} base units {base_units}")
+    base_units = get_score_units(tally)
 
     # numpy array is needed as a pandas series can't have units
 
@@ -188,7 +184,7 @@ def process_spectra_tally(
 
 def process_dose_tally(
     tally,
-    required_units: str = "picosievert cm **2 / simulated_particle",
+    required_units: str = "picosievert / simulated_particle",
     source_strength: float = None,
     volume: float = None,
 ):
@@ -216,17 +212,14 @@ def process_dose_tally(
         raise ValueError("EnergyFunctionFilter was not found in dose tally")
 
     # checks for user provided base units
-    base_units = get_tally_units(tally)
-    base_units = ureg.picosievert * ureg.centimeter * base_units
+    base_units = get_score_units(tally)
+    base_units = base_units * ureg.picosievert / ureg.centimeter
 
-    # dose coefficients have pico sievert cm **2
-    # flux has cm2 / simulated_particle units
-    # dose on a surface uses a current score (units of per simulated_particle) and is therefore * area to get pSv / source particle
-    # dose on a volume uses a flux score (units of cm2 per simulated particle) and therefore gives pSv cm**4 / simulated particle
+    # dose coefficients are flux to does coefficients and have units of picoSievert / cm
+    # flux has particle ureg.centimeter / simulated_particle units
+    # dose on a volume uses a flux score (units of cm per simulated particle) and therefore gives pSv / simulated particle
 
     data_frame = tally.get_pandas_dataframe()
-
-    # print(f"tally {tally.name} base units {base_units}")
 
     tally_result = np.array(data_frame["mean"]) * base_units
 
@@ -293,9 +286,7 @@ def process_tally(
 
     data_frame = tally.get_pandas_dataframe()
 
-    base_units = get_tally_units(tally)
-
-    # print(f"tally {tally.name} base units {base_units}")
+    base_units = get_score_units(tally)
 
     tally_result = np.array(data_frame["mean"]) * base_units
 
@@ -357,7 +348,6 @@ def scale_tally(
         and displacement_diff == -1
     ):
 
-        # print("energy per displacement_diff scaling needed (eV)")
         if energy_per_displacement:
             energy_per_displacement = (
                 energy_per_displacement * ureg.electron_volt / ureg["displacements"]
@@ -373,7 +363,6 @@ def scale_tally(
         tally_result.units, required_units, "[displacements]"
     )
     if displacement_diff == -1:
-        # print("energy per displacement_diff scaling needed (eV)")
         if energy_per_displacement:
             energy_per_displacement = (
                 energy_per_displacement * ureg.electron_volt / ureg["displacements"]
@@ -388,7 +377,6 @@ def scale_tally(
         tally_result.units, required_units, "[time]"
     )
     if time_diff != 0:
-        # print("time scaling needed (seconds)")
         if source_strength:
             source_strength = source_strength * ureg["1 / second"]
             if time_diff == -1:
@@ -404,7 +392,6 @@ def scale_tally(
         tally_result.units, required_units, "[pulse]"
     )
     if time_diff != 0:
-        # print("time scaling needed (pulse)")
         if source_strength:
             source_strength = source_strength * ureg["1 / pulse"]
             if time_diff == -1:
@@ -420,7 +407,6 @@ def scale_tally(
         tally_result.units, required_units, "[length]"
     )
     if length_diff != 0:
-        # print("length scaling needed")
         if volume:
             volume_with_units = volume * ureg["centimeter ** 3"]
         else:
@@ -439,25 +425,20 @@ def scale_tally(
                 raise ValueError(msg)
 
         if length_diff == 3:
-            # print("dividing by volume")
             tally_result = tally_result / volume_with_units
         elif length_diff == -3:
-            # print("multiplying by volume")
             tally_result = tally_result * volume_with_units
 
     atom_diff = check_for_dimentionality_difference(
         tally_result.units, required_units, "[atom]"
     )
     if atom_diff != 0:
-        # print("atom scaling needed")
         if atoms:
             atoms = atoms * ureg["atom"]
 
             if atom_diff == 1:
-                # print("dividing by atom")
                 tally_result = tally_result / atoms
             elif atom_diff == -1:
-                # print("multiplying by atom")
                 tally_result = tally_result * atoms
 
         else:
@@ -566,7 +547,7 @@ def check_for_energy_function_filter(tally):
     return False
 
 
-def get_tally_units(tally):
+def get_score_units(tally):
     """ """
 
     if tally.scores == ["current"]:
@@ -574,7 +555,6 @@ def get_tally_units(tally):
         units = units / (ureg.simulated_particle)
 
     elif tally.scores == ["flux"]:
-        print("score is flux")
         # tally has units of particle-cm2 per simulated_particle
         # https://openmc.discourse.group/t/normalizing-tally-to-get-flux-value/99/4
         units = get_particles_from_tally_filters(tally, ureg)
@@ -591,7 +571,7 @@ def get_tally_units(tally):
     else:
         msg = (
             "units for tally can't be found. Tallies that are supported "
-            "by get_tally_units function are those with scores of current, "
+            "by get_score_units function are those with scores of current, "
             "flux, heating, damage-energy"
         )
         raise ValueError(msg)
