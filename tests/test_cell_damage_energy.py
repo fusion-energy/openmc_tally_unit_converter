@@ -12,15 +12,25 @@ class TestUsage(unittest.TestCase):
         statepoint = openmc.StatePoint(filepath="statepoint.2.h5")
         self.my_tally = statepoint.get_tally(name="2_damage-energy")
 
+    def test_cell_tally_base_units(self):
+        # returns the tally with base units
+        result = otuc.process_tally(tally=self.my_tally, required_units=None)
+
+        assert len(result) == 2
+        assert result[0].units == "electron_volt / source_particle"
+        assert result[1].units == "electron_volt / source_particle"
+        assert isinstance(result[0][0].magnitude, float)
+        assert isinstance(result[1][0].magnitude, float)
+
     def test_energy_no_processing(self):
         # returns the tally with base units
         result = otuc.process_damage_energy_tally(
-            tally=self.my_tally, required_units="eV / simulated_particle"
+            tally=self.my_tally, required_units="eV / source_particle"
         )
 
         assert len(result) == 2
-        assert result[0].units == "electron_volt / simulated_particle"
-        assert result[1].units == "electron_volt / simulated_particle"
+        assert result[0].units == "electron_volt / source_particle"
+        assert result[1].units == "electron_volt / source_particle"
         assert isinstance(result[0][0].magnitude, float)
         assert isinstance(result[1][0].magnitude, float)
 
@@ -111,14 +121,14 @@ class TestUsage(unittest.TestCase):
 
         result = otuc.process_damage_energy_tally(
             tally=self.my_tally,
-            required_units="MeV / simulated_particle / atom",
+            required_units="MeV / source_particle / atom",
             volume=5,
             material=my_mat,
         )
 
         assert len(result) == 2
-        assert result[0].units == "megaelectron_volt / atom / simulated_particle"
-        assert result[1].units == "megaelectron_volt / atom / simulated_particle"
+        assert result[0].units == "megaelectron_volt / atom / source_particle"
+        assert result[1].units == "megaelectron_volt / atom / source_particle"
 
     def test_energy_per_second_per_atom(self):
         """makes use of material and volume to convert to per atom units"""
@@ -139,7 +149,7 @@ class TestUsage(unittest.TestCase):
         assert result[0].units == "megaelectron_volt / atom / second"
         assert result[1].units == "megaelectron_volt / atom / second"
 
-    def test_displacements_per_simulated_particle(self):
+    def test_displacements_per_source_particle(self):
         """makes use of energy_per_displacement to convert to displacements units"""
 
         my_mat = openmc.Material()
@@ -148,13 +158,13 @@ class TestUsage(unittest.TestCase):
 
         result = otuc.process_damage_energy_tally(
             tally=self.my_tally,
-            required_units="displacements / simulated_particle",
+            required_units="displacements / source_particle",
             energy_per_displacement=80,
         )
 
         assert len(result) == 2
-        assert result[0].units == "displacements / simulated_particle"
-        assert result[1].units == "displacements / simulated_particle"
+        assert result[0].units == "displacements / source_particle"
+        assert result[1].units == "displacements / source_particle"
 
     def test_displacements_per_second(self):
         """makes use of energy_per_displacement to get displacements per second"""

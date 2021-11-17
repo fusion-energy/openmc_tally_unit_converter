@@ -1,21 +1,20 @@
 import unittest
 
-import openmc_tally_unit_converter as otuc
 import openmc
-import pytest
+import openmc_tally_unit_converter as otuc
 
 
 class TestUsage(unittest.TestCase):
     def setUp(self):
+        # loads in the statepoint file containing tallies and finds three tallies
 
-        # loads in the statepoint file containing tallies
-        statepoint = openmc.StatePoint(filepath="statepoint.2.h5")
-        self.my_tally = statepoint.get_tally(name="2_neutron_effective_dose")
+        # single batch cell tally
+        statepoint_1 = openmc.StatePoint(filepath="statepoint.1.h5")
+        self.my_tally_2 = statepoint_1.get_tally(name="2_neutron_effective_dose")
 
-        statepoint = openmc.StatePoint(filepath="statepoint.1.h5")
-        self.my_tally_2 = statepoint.get_tally(name="2_neutron_effective_dose")
-
-    # todo test that processing a flux tally results in a ValueError as it is missing the EnergyFunctionFilter
+        # two batch cell tally
+        statepoint_2 = openmc.StatePoint(filepath="statepoint.2.h5")
+        self.my_tally = statepoint_2.get_tally(name="2_neutron_effective_dose")
 
     def test_cell_tally_dose_no_std_dev(self):
 
@@ -24,7 +23,20 @@ class TestUsage(unittest.TestCase):
         )
 
         assert len(result) == 1
-        assert result[0].units == "picosievert / simulated_particle"
+        assert (
+            result[0].units == "neutron * centimeter**3 * picosievert / source_particle"
+        )
+
+    def test_cell_tally_dose_base_units(self):
+        # returns the tally with base units
+        result = otuc.process_dose_tally(tally=self.my_tally, required_units=None)
+        assert len(result) == 2
+        assert (
+            result[0].units == "centimeter**3 * neutron * picosievert / source_particle"
+        )
+        assert (
+            result[1].units == "centimeter**3 * neutron * picosievert / source_particle"
+        )
 
     def test_cell_tally_dose_no_processing(self):
         # returns the tally with base units
@@ -32,46 +44,60 @@ class TestUsage(unittest.TestCase):
             tally=self.my_tally,
         )
         assert len(result) == 2
-        assert result[0].units == "picosievert / simulated_particle"
-        assert result[1].units == "picosievert / simulated_particle"
+        assert (
+            result[0].units == "centimeter**3 * neutron * picosievert / source_particle"
+        )
+        assert (
+            result[1].units == "centimeter**3 * neutron * picosievert / source_particle"
+        )
 
     def test_cell_tally_dose_processing_with_scaling(self):
 
         result = otuc.process_dose_tally(
-            tally=self.my_tally, required_units="sievert / simulated_particle"
+            tally=self.my_tally,
+            required_units="centimeter**3 * sievert / source_particle",
         )
         assert len(result) == 2
-        assert result[0].units == "sievert / simulated_particle"
-        assert result[1].units == "sievert / simulated_particle"
+        assert result[0].units == "centimeter**3 * sievert / source_particle"
+        assert result[1].units == "centimeter**3 * sievert / source_particle"
+
+    def test_cell_tally_dose_processing_volume(self):
+
+        result = otuc.process_dose_tally(
+            tally=self.my_tally, required_units="sievert / source_particle", volume=100
+        )
+        assert len(result) == 2
+        assert result[0].units == "sievert / source_particle"
+        assert result[1].units == "sievert / source_particle"
 
     def test_cell_tally_dose_with_pulse_processing(self):
         result = otuc.process_dose_tally(
             source_strength=1.3e6,
             tally=self.my_tally,
-            required_units="sievert / pulse",
+            required_units="centimeter**3 * sievert / pulse",
         )
         assert len(result) == 2
-        assert result[0].units == "sievert / pulse"
-        assert result[1].units == "sievert / pulse"
+        assert result[0].units == "centimeter**3 * sievert / pulse"
+        assert result[1].units == "centimeter**3 * sievert / pulse"
 
     def test_cell_tally_dose_with_second_processing(self):
         result = otuc.process_dose_tally(
             source_strength=1.3e6,
             tally=self.my_tally,
-            required_units="sievert / second",
+            required_units="centimeter**3 * sievert / second",
         )
         assert len(result) == 2
-        assert result[0].units == "sievert / second"
-        assert result[1].units == "sievert / second"
+        assert result[0].units == "centimeter**3 * sievert / second"
+        assert result[1].units == "centimeter**3 * sievert / second"
 
     def test_cell_tally_dose_with_pulse_processing(self):
         result = otuc.process_dose_tally(
             source_strength=1.3e6,
             tally=self.my_tally,
             volume=100,
-            required_units="sievert / second / cm**3",
+            required_units="sievert / second",
         )
         # when dividing by volume perhaps units should emerge as sievert/second
         assert len(result) == 2
-        assert result[0].units == "sievert / second / centimeter **3"
-        assert result[1].units == "sievert / second / centimeter **3"
+        assert result[0].units == "sievert / second"
+        assert result[1].units == "sievert / second"

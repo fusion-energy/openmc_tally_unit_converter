@@ -9,12 +9,12 @@ my_tally = statepoint.get_tally(name="2_heating")
 
 
 # returns the tally with base units
-result = otuc.process_tally(tally=my_tally, required_units="eV / simulated_particle")
+result = otuc.process_tally(tally=my_tally, required_units="eV / source_particle")
 print(f"heating base units = {result}", end="\n\n")
 
 
 # returns the tally with scalled based units (MeV instead of eV)
-result = otuc.process_tally(tally=my_tally, required_units="MeV / simulated_particle")
+result = otuc.process_tally(tally=my_tally, required_units="MeV / source_particle")
 print(f"heating scalled base units = {result}", end="\n\n")
 
 

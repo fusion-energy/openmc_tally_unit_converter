@@ -4,7 +4,7 @@
 particle = []
 neutron = []
 photon = []
-simulated_particle = []
+source_particle = []
 atom = [atom]
 displacements = [displacements]
 pulse = [pulse]

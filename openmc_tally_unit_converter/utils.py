@@ -12,7 +12,7 @@ ureg.load_definitions(str(Path(__file__).parent / "neutronics_units.txt"))
 
 def process_damage_energy_tally(
     tally,
-    required_units: str = "eV / simulated_particle",
+    required_units: str = None,
     source_strength: float = None,
     volume: float = None,
     energy_per_displacement: float = None,
@@ -21,12 +21,12 @@ def process_damage_energy_tally(
 ):
     """Processes a damage-energy tally converting the tally with default units
     obtained during simulation into the user specified units. Can be processed
-    to obtain damage per atom (DPA)
+    to obtain damage per atom (DPA). Base units are  'eV / source_particle'
 
     Args:
         tally: The openmc.Tally object which should be a spectra tally. With a
             score of flux or current and an EnergyFunctionFilter
-        required_units: The units to convert the energy and tally into
+        required_units: The units to convert the energy and tally into.
         source_strength: In some cases the source_strength will be required
             to convert the base units into the required units. This optional
             argument allows the user to specify the source_strength when needed
@@ -75,32 +75,40 @@ def process_damage_energy_tally(
     else:
         number_of_atoms_per_cm3 = None
 
-    scaled_tally_result = scale_tally(
-        tally,
-        tally_result,
-        ureg[required_units],
-        source_strength,
-        volume,
-        number_of_atoms_per_cm3,
-        energy_per_displacement,
-    )
-
-    tally_in_required_units = scaled_tally_result.to(required_units)
-
-    if "std. dev." in get_data_frame_columns(data_frame):
-        tally_std_dev_base = np.array(data_frame["std. dev."]) * base_units
-        scaled_tally_std_dev = scale_tally(
+    if required_units is None:
+        tally_in_required_units = tally_result
+    else:
+        scaled_tally_result = scale_tally(
             tally,
-            tally_std_dev_base,
+            tally_result,
             ureg[required_units],
             source_strength,
             volume,
             number_of_atoms_per_cm3,
             energy_per_displacement,
         )
+
+        tally_in_required_units = scaled_tally_result.to(required_units)
+
+    if "std. dev." in get_data_frame_columns(data_frame):
+        tally_std_dev_base = np.array(data_frame["std. dev."]) * base_units
+        if required_units is None:
+            tally_std_dev_in_required_units = tally_std_dev_base
+        else:
+            scaled_tally_std_dev = scale_tally(
+                tally,
+                tally_std_dev_base,
+                ureg[required_units],
+                source_strength,
+                volume,
+                number_of_atoms_per_cm3,
+                energy_per_displacement,
+            )
+            tally_std_dev_in_required_units = scaled_tally_std_dev.to(required_units)
+
+        # TODO add recombination_fraction scaling
         # if recombination_fraction:
         #     scaled_tally_std_dev = scaled_tally_std_dev * recombination_fraction
-        tally_std_dev_in_required_units = scaled_tally_std_dev.to(required_units)
         return tally_in_required_units, tally_std_dev_in_required_units
     else:
         return tally_in_required_units
@@ -108,13 +116,14 @@ def process_damage_energy_tally(
 
 def process_spectra_tally(
     tally,
-    required_units: str = "centimeters / simulated_particle",
+    required_units: str = None,
     required_energy_units: str = "eV",
     source_strength: float = None,
     volume: float = None,
 ) -> tuple:
     """Processes a spectra tally converting the tally with default units
-    obtained during simulation into the user specified units.
+    obtained during simulation into the user specified units. Base units are
+    'centimeters / source_particle'
 
     Args:
         tally: The openmc.Tally object which should be a spectra tally. With a
@@ -150,26 +159,32 @@ def process_spectra_tally(
     energy_base = np.array(data_frame["energy low [eV]"]) * ureg.electron_volt
     energy_in_required_units = energy_base.to(required_energy_units)
 
-    tally_base = np.array(data_frame["mean"]) * base_units
-    scaled_tally_result = scale_tally(
-        tally,
-        tally_base,
-        ureg[required_units],
-        source_strength,
-        volume,
-    )
-    tally_in_required_units = scaled_tally_result.to(required_units)
-
-    if "std. dev." in get_data_frame_columns(data_frame):
-        tally_std_dev_base = np.array(data_frame["std. dev."]) * base_units
-        scaled_tally_std_dev = scale_tally(
+    tally_result = np.array(data_frame["mean"]) * base_units
+    if required_units is None:
+        tally_in_required_units = tally_result
+    else:
+        scaled_tally_result = scale_tally(
             tally,
-            tally_std_dev_base,
+            tally_result,
             ureg[required_units],
             source_strength,
             volume,
         )
-        tally_std_dev_in_required_units = scaled_tally_std_dev.to(required_units)
+        tally_in_required_units = scaled_tally_result.to(required_units)
+
+    if "std. dev." in get_data_frame_columns(data_frame):
+        tally_std_dev_base = np.array(data_frame["std. dev."]) * base_units
+        if required_units is None:
+            tally_std_dev_in_required_units = tally_std_dev_base
+        else:
+            scaled_tally_std_dev = scale_tally(
+                tally,
+                tally_std_dev_base,
+                ureg[required_units],
+                source_strength,
+                volume,
+            )
+            tally_std_dev_in_required_units = scaled_tally_std_dev.to(required_units)
 
         return (
             energy_in_required_units,
@@ -184,12 +199,13 @@ def process_spectra_tally(
 
 def process_dose_tally(
     tally,
-    required_units: str = "picosievert / simulated_particle",
+    required_units: str = None,
     source_strength: float = None,
     volume: float = None,
 ):
     """Processes a dose tally converting the tally with default units
-    obtained during simulation into the user specified units.
+    obtained during simulation into the user specified units. Base units are
+    'picosievert / source_particle'
 
     Args:
         tally: The openmc.Tally object which should be a spectra tally. With a
@@ -213,35 +229,43 @@ def process_dose_tally(
 
     # checks for user provided base units
     base_units = get_score_units(tally)
-    base_units = base_units * ureg.picosievert / ureg.centimeter
+    base_units = base_units * ureg.picosievert * ureg.centimeter ** 2
 
-    # dose coefficients are flux to does coefficients and have units of picoSievert / cm
-    # flux has particle ureg.centimeter / simulated_particle units
-    # dose on a volume uses a flux score (units of cm per simulated particle) and therefore gives pSv / simulated particle
+    # dose coefficients are flux to does coefficients and have units of [pSv*cm^2]
+    # flux has [particles*cm/source particle] units
+    # dose on a volume uses a flux score and the EnergyFunctionFilter with dose coefficients
+    # dose on a volume has [pSv*cm^3/source_particle] units
 
     data_frame = tally.get_pandas_dataframe()
 
     tally_result = np.array(data_frame["mean"]) * base_units
 
-    scaled_tally_result = scale_tally(
-        tally,
-        tally_result,
-        ureg[required_units],
-        source_strength,
-        volume,
-    )
-    tally_in_required_units = scaled_tally_result.to(required_units)
-
-    if "std. dev." in get_data_frame_columns(data_frame):
-        tally_std_dev_base = np.array(data_frame["std. dev."]) * base_units
-        scaled_tally_std_dev = scale_tally(
+    if required_units is None:
+        tally_in_required_units = tally_result
+    else:
+        scaled_tally_result = scale_tally(
             tally,
-            tally_std_dev_base,
+            tally_result,
             ureg[required_units],
             source_strength,
             volume,
         )
-        tally_std_dev_in_required_units = scaled_tally_std_dev.to(required_units)
+        tally_in_required_units = scaled_tally_result.to(required_units)
+
+    if "std. dev." in get_data_frame_columns(data_frame):
+        tally_std_dev_base = np.array(data_frame["std. dev."]) * base_units
+        if required_units is None:
+            tally_std_dev_in_required_units = tally_std_dev_base
+        else:
+            scaled_tally_std_dev = scale_tally(
+                tally,
+                tally_std_dev_base,
+                ureg[required_units],
+                source_strength,
+                volume,
+            )
+            tally_std_dev_in_required_units = scaled_tally_std_dev.to(required_units)
+
         return tally_in_required_units, tally_std_dev_in_required_units
     else:
         return tally_in_required_units
@@ -249,7 +273,7 @@ def process_dose_tally(
 
 def process_tally(
     tally,
-    required_units: str,
+    required_units: str = None,
     source_strength: float = None,
     volume: float = None,
 ):
@@ -290,25 +314,31 @@ def process_tally(
 
     tally_result = np.array(data_frame["mean"]) * base_units
 
-    scaled_tally_result = scale_tally(
-        tally,
-        tally_result,
-        ureg[required_units],
-        source_strength,
-        volume,
-    )
-    tally_in_required_units = scaled_tally_result.to(required_units)
-
-    if "std. dev." in get_data_frame_columns(data_frame):
-        tally_std_dev_base = np.array(data_frame["std. dev."]) * base_units
-        scaled_tally_std_dev = scale_tally(
+    if required_units is None:
+        tally_in_required_units = tally_result
+    else:
+        scaled_tally_result = scale_tally(
             tally,
-            tally_std_dev_base,
+            tally_result,
             ureg[required_units],
             source_strength,
             volume,
         )
-        tally_std_dev_in_required_units = scaled_tally_std_dev.to(required_units)
+        tally_in_required_units = scaled_tally_result.to(required_units)
+
+    if "std. dev." in get_data_frame_columns(data_frame):
+        tally_std_dev_base = np.array(data_frame["std. dev."]) * base_units
+        if required_units is None:
+            tally_std_dev_in_required_units = tally_std_dev_base
+        else:
+            scaled_tally_std_dev = scale_tally(
+                tally,
+                tally_std_dev_base,
+                ureg[required_units],
+                source_strength,
+                volume,
+            )
+            tally_std_dev_in_required_units = scaled_tally_std_dev.to(required_units)
 
         return tally_in_required_units, tally_std_dev_in_required_units
 
@@ -552,21 +582,21 @@ def get_score_units(tally):
 
     if tally.scores == ["current"]:
         units = get_particles_from_tally_filters(tally, ureg)
-        units = units / (ureg.simulated_particle)
+        units = units / (ureg.source_particle)
 
     elif tally.scores == ["flux"]:
-        # tally has units of particle-cm2 per simulated_particle
+        # tally has units of particle-cm2 per source_particle
         # https://openmc.discourse.group/t/normalizing-tally-to-get-flux-value/99/4
         units = get_particles_from_tally_filters(tally, ureg)
-        units = units * ureg.centimeter / ureg.simulated_particle
+        units = units * ureg.centimeter / ureg.source_particle
 
     elif tally.scores == ["heating"]:
-        # heating units are eV / simulated_particle
-        units = ureg.electron_volt / ureg.simulated_particle
+        # heating units are eV / source_particle
+        units = ureg.electron_volt / ureg.source_particle
 
     elif tally.scores == ["damage-energy"]:
-        # damage-energy units are eV / simulated_particle
-        units = ureg.electron_volt / ureg.simulated_particle
+        # damage-energy units are eV / source_particle
+        units = ureg.electron_volt / ureg.source_particle
 
     else:
         msg = (
