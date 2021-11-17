@@ -229,11 +229,12 @@ def process_dose_tally(
 
     # checks for user provided base units
     base_units = get_score_units(tally)
-    base_units = base_units * ureg.picosievert / ureg.centimeter
+    base_units = base_units * ureg.picosievert * ureg.centimeter ** 2
 
-    # dose coefficients are flux to does coefficients and have units of picoSievert / cm
-    # flux has particle ureg.centimeter / source_particle units
-    # dose on a volume uses a flux score (units of cm per simulated particle) and therefore gives pSv / simulated particle
+    # dose coefficients are flux to does coefficients and have units of [pSv*cm^2]
+    # flux has [particles*cm/source particle] units
+    # dose on a volume uses a flux score and the EnergyFunctionFilter with dose coefficients
+    # dose on a volume has [pSv*cm^3/source_particle] units
 
     data_frame = tally.get_pandas_dataframe()
 
