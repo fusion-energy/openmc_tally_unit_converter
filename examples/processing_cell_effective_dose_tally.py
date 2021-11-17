@@ -21,7 +21,9 @@ print(f"effective dose scaled base units = {tally_result}", end="\n\n")
 
 # returns the tally with normalisation per pulse
 tally_result, std_dev_result = otuc.process_dose_tally(
-    source_strength=1.3e6, tally=my_tally, required_units="sievert * centimeter**3 / pulse"
+    source_strength=1.3e6,
+    tally=my_tally,
+    required_units="sievert * centimeter**3 / pulse",
 )
 print(f"effective dose per pulse = {tally_result}", end="\n\n")
 
@@ -34,7 +36,9 @@ print(f"effective dose per second = {tally_result}", end="\n\n")
 
 # returns the tally with normalisation for volume
 tally_result, std_dev_result = otuc.process_dose_tally(
-    source_strength=1.3e6, tally=my_tally, required_units="Sv / source_particle",
-    volume=10
+    source_strength=1.3e6,
+    tally=my_tally,
+    required_units="Sv / source_particle",
+    volume=10,
 )
 print(f"effective dose per second = {tally_result}", end="\n\n")

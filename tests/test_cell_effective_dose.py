@@ -17,10 +17,10 @@ class TestUsage(unittest.TestCase):
         statepoint_2 = openmc.StatePoint(filepath="statepoint.2.h5")
         self.my_tally = statepoint_2.get_tally(name="2_neutron_effective_dose")
 
-        
         # single batch mesh tally
         self.my_tally_2 = statepoint.get_tally(name="2_neutron_effective_dose")
         neutron_effective_dose_on_2D_mesh_xy
+
     # todo test that processing a flux tally results in a ValueError as it is missing the EnergyFunctionFilter
 
     def test_cell_tally_dose_no_std_dev(self):
@@ -44,7 +44,8 @@ class TestUsage(unittest.TestCase):
     def test_cell_tally_dose_processing_with_scaling(self):
 
         result = otuc.process_dose_tally(
-            tally=self.my_tally, required_units="centimeter**3 * sievert / source_particle"
+            tally=self.my_tally,
+            required_units="centimeter**3 * sievert / source_particle",
         )
         assert len(result) == 2
         assert result[0].units == "centimeter**3 * sievert / source_particle"

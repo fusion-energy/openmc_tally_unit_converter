@@ -213,7 +213,7 @@ def process_dose_tally(
 
     # checks for user provided base units
     base_units = get_score_units(tally)
-    base_units = base_units * ureg.picosievert * ureg.centimeter **2
+    base_units = base_units * ureg.picosievert * ureg.centimeter ** 2
 
     # dose coefficients are flux to does coefficients and have units of [pSv*cm^2]
     # flux has [particles*cm/source particle] units
