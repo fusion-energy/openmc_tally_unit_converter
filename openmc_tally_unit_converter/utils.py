@@ -291,7 +291,7 @@ def process_tally(
     tally_result = np.array(data_frame["mean"]) * base_units
 
     if required_units is None:
-        tally_in_required_units=tally_result
+        tally_in_required_units = tally_result
     else:
         scaled_tally_result = scale_tally(
             tally,
@@ -305,7 +305,7 @@ def process_tally(
     if "std. dev." in get_data_frame_columns(data_frame):
         tally_std_dev_base = np.array(data_frame["std. dev."]) * base_units
         if required_units is None:
-            tally_std_dev_in_required_units=tally_std_dev_base
+            tally_std_dev_in_required_units = tally_std_dev_base
         else:
             scaled_tally_std_dev = scale_tally(
                 tally,
