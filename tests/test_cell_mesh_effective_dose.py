@@ -13,14 +13,16 @@ class TestUsage(unittest.TestCase):
         self.my_tally = statepoint_2.get_tally(name="2_neutron_effective_dose")
 
         # two batch mesh tally
-        self.my_tally_2 = statepoint_2.get_tally(name="neutron_effective_dose_on_2D_mesh_xy")
+        self.my_tally_2 = statepoint_2.get_tally(
+            name="neutron_effective_dose_on_2D_mesh_xy"
+        )
 
     def test_cell_tally_dose_processing_volume(self):
 
         result = otuc.process_dose_tally(
             tally=self.my_tally_2,
             required_units="sievert / source_particle",
-            volume=100
+            volume=100,
         )
         assert len(result) == 2
         assert result[0].units == "sievert / source_particle"

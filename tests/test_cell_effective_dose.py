@@ -31,8 +31,12 @@ class TestUsage(unittest.TestCase):
         # returns the tally with base units
         result = otuc.process_dose_tally(tally=self.my_tally, required_units=None)
         assert len(result) == 2
-        assert result[0].units == "centimeter**3 * neutron * picosievert / source_particle"
-        assert result[1].units == "centimeter**3 * neutron * picosievert / source_particle"
+        assert (
+            result[0].units == "centimeter**3 * neutron * picosievert / source_particle"
+        )
+        assert (
+            result[1].units == "centimeter**3 * neutron * picosievert / source_particle"
+        )
 
     def test_cell_tally_dose_no_processing(self):
         # returns the tally with base units
@@ -40,8 +44,12 @@ class TestUsage(unittest.TestCase):
             tally=self.my_tally,
         )
         assert len(result) == 2
-        assert result[0].units == "centimeter**3 * neutron * picosievert / source_particle"
-        assert result[1].units == "centimeter**3 * neutron * picosievert / source_particle"
+        assert (
+            result[0].units == "centimeter**3 * neutron * picosievert / source_particle"
+        )
+        assert (
+            result[1].units == "centimeter**3 * neutron * picosievert / source_particle"
+        )
 
     def test_cell_tally_dose_processing_with_scaling(self):
 
@@ -56,9 +64,7 @@ class TestUsage(unittest.TestCase):
     def test_cell_tally_dose_processing_volume(self):
 
         result = otuc.process_dose_tally(
-            tally=self.my_tally,
-            required_units="sievert / source_particle",
-            volume=100
+            tally=self.my_tally, required_units="sievert / source_particle", volume=100
         )
         assert len(result) == 2
         assert result[0].units == "sievert / source_particle"
