@@ -15,12 +15,12 @@ class TestUsage(unittest.TestCase):
     def test_cell_tally_heating_no_processing(self):
         # returns the tally with base units
         result = otuc.process_tally(
-            tally=self.my_tally, required_units="eV / simulated_particle"
+            tally=self.my_tally, required_units="eV / source_particle"
         )
 
         assert len(result) == 2
-        assert result[0].units == "electron_volt / simulated_particle"
-        assert result[1].units == "electron_volt / simulated_particle"
+        assert result[0].units == "electron_volt / source_particle"
+        assert result[1].units == "electron_volt / source_particle"
         assert isinstance(result[0][0].magnitude, float)
         assert isinstance(result[1][0].magnitude, float)
 

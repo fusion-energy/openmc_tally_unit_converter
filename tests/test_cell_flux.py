@@ -19,22 +19,22 @@ class TestUsage(unittest.TestCase):
 
         result = otuc.process_tally(
             tally=self.my_tally_2,
-            required_units="centimeter / simulated_particle",
+            required_units="centimeter / source_particle",
         )
 
         assert len(result) == 1
-        assert result[0].units == "centimeter / simulated_particle"
+        assert result[0].units == "centimeter / source_particle"
 
     def test_cell_tally_flux_no_processing(self):
 
         result = otuc.process_tally(
             tally=self.my_tally,
-            required_units="centimeter / simulated_particle",
+            required_units="centimeter / source_particle",
         )
 
         assert len(result) == 2
-        assert result[0].units == "centimeter / simulated_particle"
-        assert result[1].units == "centimeter / simulated_particle"
+        assert result[0].units == "centimeter / source_particle"
+        assert result[1].units == "centimeter / source_particle"
 
     def test_cell_tally_flux_fusion_power_processing(self):
 

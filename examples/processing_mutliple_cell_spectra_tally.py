@@ -14,13 +14,13 @@ results["3_neutron_spectra"] = statepoint.get_tally(name="3_neutron_spectra")
 plot = plot_spectrum_from_tally(
     spectrum=results,
     x_label="Energy [eV]",
-    y_label="neutron flux [centimeters / simulated_particle]",
+    y_label="neutron flux [centimeters / source_particle]",
     x_scale="log",
     y_scale="log",
     filename="combine_spectra_plot_1.html",
     required_energy_units="eV",
     plotting_package="plotly",
-    required_units="centimeters / simulated_particle",
+    required_units="centimeters / source_particle",
 )
 
 

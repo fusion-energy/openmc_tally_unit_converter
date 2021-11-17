@@ -20,7 +20,7 @@ class TestUsage(unittest.TestCase):
         # units for energy
         assert result[0].units == "electron_volt"
         # units for flux
-        assert result[1].units == "centimeter / simulated_particle"
+        assert result[1].units == "centimeter / source_particle"
 
     def test_cell_tally_spectra_pulse_processing(self):
 

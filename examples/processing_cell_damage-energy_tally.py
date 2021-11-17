@@ -10,7 +10,7 @@ my_tally = statepoint.get_tally(name="2_damage-energy")
 
 # returns the tally with base units
 result = otuc.process_damage_energy_tally(
-    tally=my_tally, required_units="eV / simulated_particle"
+    tally=my_tally, required_units="eV / source_particle"
 )
 print(f"damage-energy base units = {result}", end="\n\n")
 
@@ -18,7 +18,7 @@ print(f"damage-energy base units = {result}", end="\n\n")
 # returns the tally with scalled based units (MeV instead of eV)
 result, std_dev = otuc.process_damage_energy_tally(
     tally=my_tally,
-    required_units="MeV / simulated_particle"
+    required_units="MeV / source_particle"
     # required_units="displacements per atoms"
 )
 print(f"damage-energy scaled base units = {result}", end="\n\n")
