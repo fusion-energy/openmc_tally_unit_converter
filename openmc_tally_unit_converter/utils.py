@@ -12,7 +12,7 @@ ureg.load_definitions(str(Path(__file__).parent / "neutronics_units.txt"))
 
 def process_damage_energy_tally(
     tally,
-    required_units: str = "eV / source_particle",
+    required_units: str = None,
     source_strength: float = None,
     volume: float = None,
     energy_per_displacement: float = None,
@@ -21,12 +21,12 @@ def process_damage_energy_tally(
 ):
     """Processes a damage-energy tally converting the tally with default units
     obtained during simulation into the user specified units. Can be processed
-    to obtain damage per atom (DPA)
+    to obtain damage per atom (DPA). Base units are  'eV / source_particle'
 
     Args:
         tally: The openmc.Tally object which should be a spectra tally. With a
             score of flux or current and an EnergyFunctionFilter
-        required_units: The units to convert the energy and tally into
+        required_units: The units to convert the energy and tally into.
         source_strength: In some cases the source_strength will be required
             to convert the base units into the required units. This optional
             argument allows the user to specify the source_strength when needed
@@ -116,13 +116,14 @@ def process_damage_energy_tally(
 
 def process_spectra_tally(
     tally,
-    required_units: str = "centimeters / source_particle",
+    required_units: str = None,
     required_energy_units: str = "eV",
     source_strength: float = None,
     volume: float = None,
 ) -> tuple:
     """Processes a spectra tally converting the tally with default units
-    obtained during simulation into the user specified units.
+    obtained during simulation into the user specified units. Base units are
+    'centimeters / source_particle'
 
     Args:
         tally: The openmc.Tally object which should be a spectra tally. With a
@@ -198,12 +199,13 @@ def process_spectra_tally(
 
 def process_dose_tally(
     tally,
-    required_units: str = "picosievert / source_particle",
+    required_units: str = None,
     source_strength: float = None,
     volume: float = None,
 ):
     """Processes a dose tally converting the tally with default units
-    obtained during simulation into the user specified units.
+    obtained during simulation into the user specified units. Base units are
+    'picosievert / source_particle'
 
     Args:
         tally: The openmc.Tally object which should be a spectra tally. With a
