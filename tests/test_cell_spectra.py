@@ -16,6 +16,7 @@ class TestUsage(unittest.TestCase):
         # returns the tally with base units
         result = otuc.process_spectra_tally(
             tally=self.my_tally,
+            required_units=None
         )
         # units for energy
         assert result[0].units == "electron_volt"

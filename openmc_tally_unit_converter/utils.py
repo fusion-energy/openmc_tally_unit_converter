@@ -75,32 +75,40 @@ def process_damage_energy_tally(
     else:
         number_of_atoms_per_cm3 = None
 
-    scaled_tally_result = scale_tally(
-        tally,
-        tally_result,
-        ureg[required_units],
-        source_strength,
-        volume,
-        number_of_atoms_per_cm3,
-        energy_per_displacement,
-    )
-
-    tally_in_required_units = scaled_tally_result.to(required_units)
-
-    if "std. dev." in get_data_frame_columns(data_frame):
-        tally_std_dev_base = np.array(data_frame["std. dev."]) * base_units
-        scaled_tally_std_dev = scale_tally(
+    if required_units is None:
+        tally_in_required_units = tally_result
+    else:
+        scaled_tally_result = scale_tally(
             tally,
-            tally_std_dev_base,
+            tally_result,
             ureg[required_units],
             source_strength,
             volume,
             number_of_atoms_per_cm3,
             energy_per_displacement,
         )
+
+        tally_in_required_units = scaled_tally_result.to(required_units)
+
+    if "std. dev." in get_data_frame_columns(data_frame):
+        tally_std_dev_base = np.array(data_frame["std. dev."]) * base_units
+        if required_units is None:
+            tally_std_dev_in_required_units = tally_std_dev_base
+        else:
+            scaled_tally_std_dev = scale_tally(
+                tally,
+                tally_std_dev_base,
+                ureg[required_units],
+                source_strength,
+                volume,
+                number_of_atoms_per_cm3,
+                energy_per_displacement,
+            )
+            tally_std_dev_in_required_units = scaled_tally_std_dev.to(required_units)
+        
+        # TODO add recombination_fraction scaling
         # if recombination_fraction:
         #     scaled_tally_std_dev = scaled_tally_std_dev * recombination_fraction
-        tally_std_dev_in_required_units = scaled_tally_std_dev.to(required_units)
         return tally_in_required_units, tally_std_dev_in_required_units
     else:
         return tally_in_required_units
@@ -150,26 +158,32 @@ def process_spectra_tally(
     energy_base = np.array(data_frame["energy low [eV]"]) * ureg.electron_volt
     energy_in_required_units = energy_base.to(required_energy_units)
 
-    tally_base = np.array(data_frame["mean"]) * base_units
-    scaled_tally_result = scale_tally(
-        tally,
-        tally_base,
-        ureg[required_units],
-        source_strength,
-        volume,
-    )
-    tally_in_required_units = scaled_tally_result.to(required_units)
-
-    if "std. dev." in get_data_frame_columns(data_frame):
-        tally_std_dev_base = np.array(data_frame["std. dev."]) * base_units
-        scaled_tally_std_dev = scale_tally(
+    tally_result = np.array(data_frame["mean"]) * base_units
+    if required_units is None:
+        tally_in_required_units = tally_result
+    else:
+        scaled_tally_result = scale_tally(
             tally,
-            tally_std_dev_base,
+            tally_result,
             ureg[required_units],
             source_strength,
             volume,
         )
-        tally_std_dev_in_required_units = scaled_tally_std_dev.to(required_units)
+        tally_in_required_units = scaled_tally_result.to(required_units)
+
+    if "std. dev." in get_data_frame_columns(data_frame):
+        tally_std_dev_base = np.array(data_frame["std. dev."]) * base_units
+        if required_units is None:
+            tally_std_dev_in_required_units = tally_std_dev_base
+        else:
+            scaled_tally_std_dev = scale_tally(
+                tally,
+                tally_std_dev_base,
+                ureg[required_units],
+                source_strength,
+                volume,
+            )
+            tally_std_dev_in_required_units = scaled_tally_std_dev.to(required_units)
 
         return (
             energy_in_required_units,
@@ -223,25 +237,32 @@ def process_dose_tally(
 
     tally_result = np.array(data_frame["mean"]) * base_units
 
-    scaled_tally_result = scale_tally(
-        tally,
-        tally_result,
-        ureg[required_units],
-        source_strength,
-        volume,
-    )
-    tally_in_required_units = scaled_tally_result.to(required_units)
-
-    if "std. dev." in get_data_frame_columns(data_frame):
-        tally_std_dev_base = np.array(data_frame["std. dev."]) * base_units
-        scaled_tally_std_dev = scale_tally(
+    if required_units is None:
+        tally_in_required_units = tally_result
+    else:
+        scaled_tally_result = scale_tally(
             tally,
-            tally_std_dev_base,
+            tally_result,
             ureg[required_units],
             source_strength,
             volume,
         )
-        tally_std_dev_in_required_units = scaled_tally_std_dev.to(required_units)
+        tally_in_required_units = scaled_tally_result.to(required_units)
+
+    if "std. dev." in get_data_frame_columns(data_frame):
+        tally_std_dev_base = np.array(data_frame["std. dev."]) * base_units
+        if required_units is None:
+            tally_std_dev_in_required_units = tally_std_dev_base
+        else:
+            scaled_tally_std_dev = scale_tally(
+                tally,
+                tally_std_dev_base,
+                ureg[required_units],
+                source_strength,
+                volume,
+            )
+            tally_std_dev_in_required_units = scaled_tally_std_dev.to(required_units)
+
         return tally_in_required_units, tally_std_dev_in_required_units
     else:
         return tally_in_required_units

@@ -26,6 +26,16 @@ class TestUsage(unittest.TestCase):
         assert len(result) == 1
         assert result[0].units == "picosievert / source_particle"
 
+    def test_cell_tally_dose_base_units(self):
+        # returns the tally with base units
+        result = otuc.process_dose_tally(
+            tally=self.my_tally,
+            required_units=None
+        )
+        assert len(result) == 2
+        assert result[0].units == "picosievert / source_particle"
+        assert result[1].units == "picosievert / source_particle"
+
     def test_cell_tally_dose_no_processing(self):
         # returns the tally with base units
         result = otuc.process_dose_tally(

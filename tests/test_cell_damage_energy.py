@@ -14,7 +14,7 @@ class TestUsage(unittest.TestCase):
 
     def test_cell_tally_base_units(self):
         # returns the tally with base units
-        result = otuc.process_tally(tally=self.my_tally)
+        result = otuc.process_tally(tally=self.my_tally, required_units=None)
 
         assert len(result) == 2
         assert result[0].units == "electron_volt / source_particle"
