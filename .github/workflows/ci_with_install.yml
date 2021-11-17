@@ -5,6 +5,9 @@ name: CI with install
 
 on:
   pull_request:
+    branches:
+      - develop
+      - main
     paths-ignore:
       - 'docs/**'
       - '.gitignore'
