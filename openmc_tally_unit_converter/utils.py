@@ -12,7 +12,7 @@ ureg.load_definitions(str(Path(__file__).parent / "neutronics_units.txt"))
 
 def process_damage_energy_tally(
     tally,
-    required_units: str = "eV / simulated_particle",
+    required_units: str = "eV / source_particle",
     source_strength: float = None,
     volume: float = None,
     energy_per_displacement: float = None,
@@ -108,7 +108,7 @@ def process_damage_energy_tally(
 
 def process_spectra_tally(
     tally,
-    required_units: str = "centimeters / simulated_particle",
+    required_units: str = "centimeters / source_particle",
     required_energy_units: str = "eV",
     source_strength: float = None,
     volume: float = None,
@@ -184,7 +184,7 @@ def process_spectra_tally(
 
 def process_dose_tally(
     tally,
-    required_units: str = "picosievert / simulated_particle",
+    required_units: str = "picosievert / source_particle",
     source_strength: float = None,
     volume: float = None,
 ):
@@ -216,7 +216,7 @@ def process_dose_tally(
     base_units = base_units * ureg.picosievert / ureg.centimeter
 
     # dose coefficients are flux to does coefficients and have units of picoSievert / cm
-    # flux has particle ureg.centimeter / simulated_particle units
+    # flux has particle ureg.centimeter / source_particle units
     # dose on a volume uses a flux score (units of cm per simulated particle) and therefore gives pSv / simulated particle
 
     data_frame = tally.get_pandas_dataframe()
@@ -552,21 +552,21 @@ def get_score_units(tally):
 
     if tally.scores == ["current"]:
         units = get_particles_from_tally_filters(tally, ureg)
-        units = units / (ureg.simulated_particle)
+        units = units / (ureg.source_particle)
 
     elif tally.scores == ["flux"]:
-        # tally has units of particle-cm2 per simulated_particle
+        # tally has units of particle-cm2 per source_particle
         # https://openmc.discourse.group/t/normalizing-tally-to-get-flux-value/99/4
         units = get_particles_from_tally_filters(tally, ureg)
-        units = units * ureg.centimeter / ureg.simulated_particle
+        units = units * ureg.centimeter / ureg.source_particle
 
     elif tally.scores == ["heating"]:
-        # heating units are eV / simulated_particle
-        units = ureg.electron_volt / ureg.simulated_particle
+        # heating units are eV / source_particle
+        units = ureg.electron_volt / ureg.source_particle
 
     elif tally.scores == ["damage-energy"]:
-        # damage-energy units are eV / simulated_particle
-        units = ureg.electron_volt / ureg.simulated_particle
+        # damage-energy units are eV / source_particle
+        units = ureg.electron_volt / ureg.source_particle
 
     else:
         msg = (

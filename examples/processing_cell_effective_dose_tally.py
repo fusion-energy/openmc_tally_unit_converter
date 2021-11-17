@@ -14,7 +14,7 @@ print(f"effective dose tally = {tally_result}", end="\n\n")
 
 # returns the tally with scalled based units (MeV instead of eV)
 tally_result, std_dev_result = otuc.process_dose_tally(
-    tally=my_tally, required_units="sievert / simulated_particle"
+    tally=my_tally, required_units="sievert / source_particle"
 )
 print(f"effective dose scaled base units = {tally_result}", end="\n\n")
 

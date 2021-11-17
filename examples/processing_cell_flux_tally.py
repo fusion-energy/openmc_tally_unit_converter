@@ -11,14 +11,14 @@ my_tally = statepoint.get_tally(name="2_flux")
 
 # returns the tally with base units
 result = otuc.process_tally(
-    tally=my_tally, required_units="centimeter / simulated_particle"
+    tally=my_tally, required_units="centimeter / source_particle"
 )
 print(f"flux base units = {result[0].units}", end="\n\n")
 
 
 # returns the tally with scalled based units (m instead of cm)
 result = otuc.process_tally(
-    tally=my_tally, required_units="centimeter * particle / simulated_particle"
+    tally=my_tally, required_units="centimeter * particle / source_particle"
 )
 print(f"flux scaled base units = {result[0].units}", end="\n\n")
 
