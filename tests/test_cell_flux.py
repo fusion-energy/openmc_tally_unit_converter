@@ -25,6 +25,14 @@ class TestUsage(unittest.TestCase):
         assert len(result) == 1
         assert result[0].units == "centimeter / source_particle"
 
+    def test_cell_tally_flux_base_units(self):
+
+        result = otuc.process_tally(tally=self.my_tally)
+
+        assert len(result) == 2
+        assert result[0].units == "centimeter * particle / source_particle"
+        assert result[1].units == "centimeter * particle / source_particle"
+
     def test_cell_tally_flux_no_processing(self):
 
         result = otuc.process_tally(
