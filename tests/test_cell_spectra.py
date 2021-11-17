@@ -14,10 +14,7 @@ class TestUsage(unittest.TestCase):
 
     def test_cell_tally_spectra_no_processing(self):
         # returns the tally with base units
-        result = otuc.process_spectra_tally(
-            tally=self.my_tally,
-            required_units=None
-        )
+        result = otuc.process_spectra_tally(tally=self.my_tally, required_units=None)
         # units for energy
         assert result[0].units == "electron_volt"
         # units for flux

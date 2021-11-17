@@ -105,7 +105,7 @@ def process_damage_energy_tally(
                 energy_per_displacement,
             )
             tally_std_dev_in_required_units = scaled_tally_std_dev.to(required_units)
-        
+
         # TODO add recombination_fraction scaling
         # if recombination_fraction:
         #     scaled_tally_std_dev = scaled_tally_std_dev * recombination_fraction
