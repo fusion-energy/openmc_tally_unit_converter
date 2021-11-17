@@ -24,7 +24,7 @@ class TestUsage(unittest.TestCase):
         )
 
         assert len(result) == 1
-        assert result[0].units == "picosievert / source_particle"
+        assert result[0].units == "neutron * picosievert / source_particle"
 
     def test_cell_tally_dose_base_units(self):
         # returns the tally with base units
