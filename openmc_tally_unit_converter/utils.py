@@ -593,6 +593,10 @@ def get_score_units(tally):
     elif tally.scores == ["heating"]:
         # heating units are eV / source_particle
         units = ureg.electron_volt / ureg.source_particle
+        
+    elif tally.scores == ["heating-local"]:
+        # heating units are eV / source_particle
+        units = ureg.electron_volt / ureg.source_particle
 
     elif tally.scores == ["damage-energy"]:
         # damage-energy units are eV / source_particle
@@ -602,7 +606,7 @@ def get_score_units(tally):
         msg = (
             "units for tally can't be found. Tallies that are supported "
             "by get_score_units function are those with scores of current, "
-            "flux, heating, damage-energy"
+            "flux, heating, heating-local, damage-energy"
         )
         raise ValueError(msg)
 
