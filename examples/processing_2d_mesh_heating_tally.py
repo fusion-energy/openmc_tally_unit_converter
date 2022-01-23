@@ -8,11 +8,11 @@ my_tally = statepoint.get_tally(name="heating_on_2D_mesh_xy")
 
 
 # returns the tally with base units
-result = otuc.get_tally_units(
+result, error = otuc.process_tally(
     tally=my_tally,
 )
 # the tally result with base units which should be eV per simulated particle
-print(f"The base tally units for this heating tally are {result}")
+print(f"The base tally units for this heating tally are {result.units} \n")
 
 
 # scaled from picosievert to sievert

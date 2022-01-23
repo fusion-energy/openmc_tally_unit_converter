@@ -14,8 +14,9 @@ OpenMC tally results are save into a statepoint h5 file without units.
 This package ascertains the base units of common tallies by inspecting their
 tally filters and scores.
 
-The following worked example is for a heating tally. Flux, effective dose and
-DPA / damage-energy tallies are also supported.
+The following worked example is for a heating tally. Other supported tallies
+are heating-local, flux, effective dose and damage-energy (used to find DPA)
+tallies are also supported.
 
 ```python
 import openmc_tally_unit_converter as otuc
