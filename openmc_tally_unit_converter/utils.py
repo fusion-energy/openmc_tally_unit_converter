@@ -482,6 +482,8 @@ def scale_tally(
 
 
 def compute_volume_of_voxels(tally):
+    """Finds the volume of the rectangular voxels that make up a Regular mesh
+    tally."""
     if tally.contains_filter(openmc.MeshFilter):
         tally_filter = tally.find_filter(filter_type=openmc.MeshFilter)
 
@@ -578,7 +580,8 @@ def check_for_energy_function_filter(tally):
 
 
 def get_score_units(tally):
-    """ """
+    """Finds the tally score from the supported scores. Then finds the units
+    that the score results in"""
 
     if tally.scores == ["current"]:
         units = get_particles_from_tally_filters(tally, ureg)
