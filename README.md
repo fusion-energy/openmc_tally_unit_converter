@@ -1,4 +1,11 @@
 
+[![N|Python](https://www.python.org/static/community_logos/python-powered-w-100x40.png)](https://www.python.org)
+
+[![CI with install](https://github.com/fusion-energy/openmc_tally_unit_converter/actions/workflows/ci_with_install.yml/badge.svg)](https://github.com/fusion-energy/openmc_tally_unit_converter/actions/workflows/ci_with_install.yml)
+
+[![PyPI](https://img.shields.io/pypi/v/openmc_tally_unit_converter?color=brightgreen&label=pypi&logo=grebrightgreenen&logoColor=green)](https://pypi.org/project/openmc_tally_unit_converter/)
+
+
 This Python package aims to help convert OpenMC tallies to user specified units.
 
 # Installation
