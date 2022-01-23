@@ -140,12 +140,12 @@ tally15 = odw.CellTally(
 tally16 = odw.MeshTally2D(
     tally_type="neutron_effective_dose",
     plane="xy",
-    mesh_resolution=(10, 5),
+    mesh_resolution=(2, 3),
     bounding_box=[(-500, -500, 0), (500, 500, 1)],
 )
 
 tally17 = odw.MeshTally3D(
-    mesh_resolution=(500, 500, 500),
+    mesh_resolution=(2, 3, 4),
     bounding_box=[(-500, -500, 0), (500, 500, 1)],
     tally_type="neutron_effective_dose",
 )
