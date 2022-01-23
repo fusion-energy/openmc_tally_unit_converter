@@ -594,7 +594,7 @@ def get_score_units(tally):
         # heating units are eV / source_particle
         units = ureg.electron_volt / ureg.source_particle
 
-    elif tally.scores in ["heating-local"]:
+    elif tally.scores == ["heating-local"]:
         # heating-local units are eV / source_particle
         units = ureg.electron_volt / ureg.source_particle
 
