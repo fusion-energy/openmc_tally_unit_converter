@@ -590,11 +590,7 @@ def get_score_units(tally):
         units = get_particles_from_tally_filters(tally, ureg)
         units = units * ureg.centimeter / ureg.source_particle
 
-    elif tally.scores == ["heating"]:
-        # heating units are eV / source_particle
-        units = ureg.electron_volt / ureg.source_particle
-
-    elif tally.scores == ["heating-local"]:
+    elif tally.scores in ["heating", "heating-local"]:
         # heating units are eV / source_particle
         units = ureg.electron_volt / ureg.source_particle
 
