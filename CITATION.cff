@@ -9,5 +9,5 @@ authors:
   orcid: "https://orcid.org/0000-0002-6622-3835"
 title: "openmc-tally-unit-converter. A Python package that converts the OpenMC tally units."
 version: 0.3.1
-date-released: 2021-1-25
+date-released: 2022-1-25
 url: "https://github.com/fusion-energy/openmc_tally_unit_converter"
