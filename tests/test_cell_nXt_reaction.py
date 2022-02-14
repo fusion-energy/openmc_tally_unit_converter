@@ -83,7 +83,9 @@ class TestUsage(unittest.TestCase):
     def test_cell_tally_volume_processing(self):
 
         result = otuc.process_tally(
-            volume=100, tally=self.my_tally, required_units="reactions / centimeter ** 3"
+            volume=100,
+            tally=self.my_tally,
+            required_units="reactions / centimeter ** 3",
         )
 
         assert len(result) == 2

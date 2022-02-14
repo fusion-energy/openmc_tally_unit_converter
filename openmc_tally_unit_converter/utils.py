@@ -232,7 +232,7 @@ def process_dose_tally(
 
     # checks for user provided base units
     base_units = get_score_units(tally)
-    base_units = base_units * ureg.picosievert * ureg.centimeter ** 2
+    base_units = base_units * ureg.picosievert * ureg.centimeter**2
 
     # dose coefficients are flux to does coefficients and have units of [pSv*cm^2]
     # flux has [particles*cm/source particle] units
@@ -607,13 +607,13 @@ def get_score_units(tally):
     elif tally.scores == ["damage-energy"]:
         # damage-energy units are eV / source_particle
         units = ureg.electron_volt / ureg.source_particle
-    
+
     elif tally.scores == ["total"]:
         units = ureg.reactions / ureg.source_particle
 
     elif len(tally.scores) == 1 and tally.scores[0] in REACTION_NAME:
         units = ureg.reactions / ureg.source_particle
-    
+
     elif len(tally.scores) == 1 and tally.scores[0] in REACTION_MT:
         units = ureg.reactions / ureg.source_particle
 
