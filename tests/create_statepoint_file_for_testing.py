@@ -128,23 +128,33 @@ tally13 = odw.CellTally(
 )
 
 tally14 = odw.CellTally(
-    tally_type="damage-energy",
+    tally_type="(n,Xt)",
     target=2,
 )
 
 tally15 = odw.CellTally(
+    tally_type="205",
+    target=2,
+)
+
+tally16 = odw.CellTally(
+    tally_type="damage-energy",
+    target=2,
+)
+
+tally17 = odw.CellTally(
     tally_type="heating-local",
     target=2,
 )
 
-tally16 = odw.MeshTally2D(
+tally18 = odw.MeshTally2D(
     tally_type="neutron_effective_dose",
     plane="xy",
     mesh_resolution=(2, 3),
     bounding_box=[(-500, -500, 0), (500, 500, 1)],
 )
 
-tally17 = odw.MeshTally3D(
+tally19 = odw.MeshTally3D(
     mesh_resolution=(2, 3, 4),
     bounding_box=[(-500, -500, 0), (500, 500, 1)],
     tally_type="neutron_effective_dose",
@@ -169,6 +179,8 @@ tallies = openmc.Tallies(
         tally15,
         tally16,
         tally17,
+        tally18,
+        tally19,
     ]
 )
 
