@@ -1,3 +1,4 @@
+import imp
 from pathlib import Path
 from typing import Tuple
 
@@ -5,6 +6,8 @@ import numpy as np
 import openmc
 import pandas as pd
 import pint
+
+from openmc.data import REACTION_NAME, REACTION_MT
 
 ureg = pint.UnitRegistry()
 ureg.load_definitions(str(Path(__file__).parent / "neutronics_units.txt"))
@@ -229,7 +232,7 @@ def process_dose_tally(
 
     # checks for user provided base units
     base_units = get_score_units(tally)
-    base_units = base_units * ureg.picosievert * ureg.centimeter ** 2
+    base_units = base_units * ureg.picosievert * ureg.centimeter**2
 
     # dose coefficients are flux to does coefficients and have units of [pSv*cm^2]
     # flux has [particles*cm/source particle] units
@@ -605,11 +608,21 @@ def get_score_units(tally):
         # damage-energy units are eV / source_particle
         units = ureg.electron_volt / ureg.source_particle
 
+    elif tally.scores == ["total"]:
+        units = ureg.reactions / ureg.source_particle
+
+    elif len(tally.scores) == 1 and tally.scores[0] in REACTION_NAME:
+        units = ureg.reactions / ureg.source_particle
+
+    elif len(tally.scores) == 1 and tally.scores[0] in REACTION_MT:
+        units = ureg.reactions / ureg.source_particle
+
     else:
         msg = (
-            "units for tally can't be found. Tallies that are supported "
-            "by get_score_units function are those with scores of current, "
-            "flux, heating, heating-local, damage-energy"
+            f"units for tally with scores {tally.scores} can't be found. "
+            "Tallies that are supported by get_score_units function are those "
+            "with scores of current, flux, heating, heating-local, "
+            "damage-energy and standard OpenMC reactions or MT numbers"
         )
         raise ValueError(msg)
 
