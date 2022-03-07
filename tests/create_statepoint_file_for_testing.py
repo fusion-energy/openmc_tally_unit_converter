@@ -133,7 +133,7 @@ tally14 = odw.CellTally(
 )
 
 tally15 = odw.CellTally(
-    tally_type="205",
+    tally_type=205,
     target=2,
 )
 
