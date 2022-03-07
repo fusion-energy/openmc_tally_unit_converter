@@ -1,5 +1,5 @@
 # This CI will lauch a Docker image that contains all the dependencies required
-# within that image the pytest test suite is run 
+# within that image the pytest test suite is run
 
 name: CI with install
 
@@ -20,18 +20,19 @@ jobs:
   testing:
     runs-on: ubuntu-latest
     container:
-      image: openmc/openmc:latest-dagmc
+      image: ghcr.io/openmc-data-storage/miniconda3_4.9.2_endfb-7.1_nndc_tendl_2019
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
 
       - name: install package
         run: |
+          conda install -c conda-forge openmc
           python setup.py install
 
       - name: install packages for tests
         run: |
-          pip install -r requirements-test.txt 
+          pip install -r requirements-test.txt
 
       - name: Run test_utils
         run: |
